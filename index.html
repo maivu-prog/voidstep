@@ -85,6 +85,20 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
 .tubei .lk { font-size: 20px; color: #8a7a62; }
 .shelf .hint { font-size: 13px; color: #cbb89a; margin-top: 6px; }
 .launch { width: 100%; font-size: 26px; min-height: 62px; }
+.btn2 { font: inherit; font-size: 18px; font-weight: 700; color: #efe2c4; background: none; border: none; text-decoration: underline; min-height: 48px; cursor: pointer; }
+.adbox { display: none; width: min(320px, 90%); aspect-ratio: 16 / 10; background: #0e0a08; border: 4px dashed #5a4630; border-radius: 16px; color: #cbb89a; font-size: 18px; font-weight: 700; align-items: center; justify-content: center; flex-direction: column; gap: 6px; text-align: center; }
+.adbox b { font-size: 40px; color: #efe2c4; }
+.hub-news { display: none; align-items: center; gap: 10px; }
+.hub-news img { height: 48px; flex: 0 0 auto; }
+.hub-news .say { flex: 1; }
+.hub-news .more { font-size: 12px; opacity: .7; }
+.tubei { cursor: pointer; }
+.tubei.sel { outline: 3px solid #d9a53a; outline-offset: 2px; }
+.labinfo { font-size: 14px; color: #efe2c4; background: #3a2e24; border-radius: 10px; padding: 6px 8px; margin-top: 6px; }
+.labinfo b { color: #d9a53a; }
+.row.daily { border-color: #d9a53a; box-shadow: 0 0 0 2px #d9a53a inset; }
+.tag { display: inline-block; font-size: 11px; font-weight: 800; background: #d9a53a; color: #2b1d16; border-radius: 6px; padding: 0 5px; margin-right: 4px; vertical-align: middle; }
+.goal { grid-column: 1 / -1; margin-top: 4px; padding-top: 6px; border-top: 2px dashed #b8a888; text-align: center; font-weight: 800; }
 #build { position: fixed; right: 6px; bottom: 4px; font-size: 11px; color: rgba(43,29,22,.45); z-index: 2; pointer-events: none; }
 </style>
 </head>
@@ -92,8 +106,9 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
 <canvas id="c"></canvas>
 <div id="pad"><div class="pb" data-d="up"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(0 5 5)"/></svg></div><div class="pb" data-d="left"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(-90 5 5)"/></svg></div><div class="pb" data-d="right"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(90 5 5)"/></svg></div><div class="pb" data-d="down"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(180 5 5)"/></svg></div></div>
 <div id="hub"><div class="hub-top"><div class="bank"><span class="nut"></span><b id="hubBank">0</b></div><div class="hub-title">RESCUE SHIP</div><div class="hub-day" id="hubDay">Day 1</div></div><canvas id="hubShip"></canvas><div class="hub-news" id="hubNews"></div><div class="tomorrow" id="hubTomorrow"></div><div class="tabs" id="hubTabs"></div><div class="panel" id="hubPanel"></div><button class="btn launch" id="hubLaunch">LAUNCH</button></div>
+<div id="patch" class="ov"><h1>EMERGENCY<br>PATCH</h1><div class="sub">Tape the suit and get back up with 3 HP.<br>Once per run.</div><div class="adbox" id="adBox"></div><button class="btn" id="patchAd">&#9654; Watch ad</button><button class="btn2" id="patchNo">No thanks</button></div>
 <div id="end" class="ov"><h1 id="endT">SHIP CLEARED!</h1><div class="sub" id="endS"></div><div class="stats" id="endStats"></div><div class="tip" id="endTip"></div><div class="stats" id="endMeta" style="display:none"></div><button class="btn" id="again">Play again</button></div>
-<div id="build">voidstep toy-6</div>
+<div id="build">voidstep toy-7</div>
 <script>
 // VOIDSTEP — luật game thuần (không đụng DOM). main.js và test dùng chung file này.
 // Cấu trúc: 3 deck, mỗi deck là mê cung phòng (bản đồ 5x5). Phòng 7x9 ô, cửa ở giữa 4 cạnh.
@@ -709,6 +724,18 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     emit(g, { type: 'tut', step: 2 });
   }
 
+  // vá khẩn cấp (xem quảng cáo): dậy lại 1 lần mỗi ván; alien đang gồng bị huỷ đòn + choáng để người chơi kịp thở
+  function revive(g, hp) {
+    if (g.phase !== 'lost' || g.patched) return false;
+    const p = g.player;
+    g.patched = true; g.phase = 'play'; g.lostTo = null;
+    p.hp = Math.min(p.maxHp, hp || 3); p.inv = 2.0; p.cd = 0; p.queue = null;
+    for (const e of alive(g)) { e.state = 'idle'; e.tele = null; e.stun = Math.max(e.stun, 1.0); e.timer = range(g, TYPES[e.type].think); }
+    g.stats.patches = (g.stats.patches || 0) + 1;
+    emit(g, { type: 'revive', hp: p.hp });
+    return true;
+  }
+
   function hurtPlayer(g, src) {
     const p = g.player;
     if (p.inv > 0 || g.phase !== 'play') return;
@@ -928,7 +955,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     }
   }
 
-  root.VS = { W, H, MW, MH, DIRS, DOOR, TYPES, DECKS, UPGRADES, PRICE_BUFF, PRICE_HEAL, create, update, step, shoot, alive, PARRY_WINDOW, doorHp, DOOR_HP, enemyAt, objAt, tile, locked, CLOSE_WINDOW };
+  root.VS = { W, H, MW, MH, DIRS, DOOR, TYPES, DECKS, UPGRADES, PRICE_BUFF, PRICE_HEAL, create, update, step, shoot, revive, alive, PARRY_WINDOW, doorHp, DOOR_HP, enemyAt, objAt, tile, locked, CLOSE_WINDOW };
 })(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
@@ -942,6 +969,8 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     keepOnWin: 1.0, keepOnLoss: 0.5,          // phần scrap mang về
     workshopCost: [15, 35, 70],               // giá bậc 1/2/3
     contractReward: [12, 20, 30],             // theo bậc khó
+    dailyReward: 40,                          // hợp đồng ngày: khó nhất, thưởng to, đổi mỗi ngày
+    patchHp: 3,                               // vá khẩn cấp: dậy lại với 3 máu, 1 lần/ván
     visitGapMs: 30 * 60 * 1000,               // vắng > 30 phút = 1 lượt ghé mới
   };
   const CREW = [
@@ -972,6 +1001,23 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     { id: 'slam',  text: 'SLAM aliens {n} times',  stat: 'slams',   n: [10, 18, 30] },
     { id: 'deck',  text: 'Reach deck {n}',         stat: 'deck',    n: [2, 3, 3], best: true },
   ];
+
+  // khu trên tàu cứu hộ: hiện dần theo mốc; lần đầu hiện thì BOLT (robot của tàu) giới thiệu
+  const MODULES = [
+    { id: 'workshop', when: s => !!s.unl.workshop, say: "Workshop's patched up! Bring scrap, I'll bolt on upgrades." },
+    { id: 'board',    when: s => !!s.unl.contracts, say: 'Contracts board is online. Jobs pay scrap.' },
+    { id: 'lab',      when: s => !!s.unl.lab, say: 'Specimen Lab is open. Every buff you find gets a tube.' },
+    { id: 'bunks',    when: s => Object.keys(s.crew).length > 1, say: 'Crew bunks are ready. Pick who goes next.' },
+    { id: 'trophy',   when: s => s.wins >= 1, say: "You beat the Queen! Her crown goes on the shelf." },
+  ];
+  // câu thoại khi chạm vào nhân vật trên tàu
+  const LINES = {
+    bolt:    ['BEEP. Scrap in, upgrades out.', 'No refunds. Ever.', 'I polish the hull when you are not looking.'],
+    janitor: ["Wrench in hand. Mop's in the bucket.", "Vent 'em. Faster than mopping.", 'Somebody has to clean this ship.'],
+    welder:  ["Thanks for the rescue. Don't touch my torch.", "Line 'em up, I'll toast 'em.", 'Three tiles of fire. Stand back.'],
+    medic:   ["I-I'm fine! Just a bit of goo.", 'Parry first, ask questions later.', 'Doctor says: hit it when it flashes.'],
+    rigger:  ['Doors? I eat doors.', 'Hit it harder. Then once more.', 'Two tiles of push, no extra charge.'],
+  };
 
   const today = off => { const d = new Date(Date.now() + (off || 0) * 86400000); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
   function dayIndex(s) {
@@ -1023,7 +1069,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     const di = dayIndex(s);
     const c = CREW.find(x => x.deck !== null && !s.crew[x.id] && x.day > di);
     if (c) return { kind: 'crew', crew: c.id, text: c.name + "'s distress signal", days: c.day - di };
-    return { kind: 'contracts', text: 'Fresh contracts on the board', days: 1 };
+    return { kind: 'contracts', text: 'A new daily contract (+' + CONFIG.dailyReward + ' scrap)', days: 1 };
   }
 
   function lvl(s, id) { return s.ws[id] || 0; }
@@ -1048,6 +1094,40 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     const t = Math.min(2, tier);
     return { id: k.id, goal: k.n[t], prog: 0, tier: t, reward: CONFIG.contractReward[t] };
   }
+  function ensureDaily(s) {
+    if (!s.unl.contracts) return;
+    const di = dayIndex(s);
+    if (s.daily && s.daily.day === di) return;
+    const used = new Set(s.contracts.map(c => c.id));
+    const opts = CONTRACTS.filter(c => !used.has(c.id) && !c.best);
+    const k = opts[di % opts.length];
+    s.daily = { id: k.id, goal: k.n[2], prog: 0, tier: 2, reward: CONFIG.dailyReward, day: di, daily: true };
+    log(s, 'daily:' + di);
+  }
+  function claimDaily(s) {
+    const c = s.daily;
+    if (!c || !c.ready || c.claimed) return 0;
+    c.claimed = true; s.bank += c.reward; log(s, 'claim:daily'); save(s);
+    return c.reward;
+  }
+  // mục tiêu kế tiếp ở xưởng: món rẻ nhất chưa max
+  function nextGoal(s) {
+    let best = null;
+    for (const w of WORKSHOP) {
+      const l = lvl(s, w.id); if (l >= w.max) continue;
+      const cost = CONFIG.workshopCost[l];
+      if (!best || cost < best.cost) best = { name: w.name + ' ' + ['I', 'II', 'III'][l], cost };
+    }
+    return best ? { name: best.name, need: Math.max(0, best.cost - s.bank) } : null;
+  }
+  // khu mới hiện trên tàu từ lần vào sảnh trước
+  function newModules(s) {
+    s.shipSeen = s.shipSeen || {};
+    const out = MODULES.filter(m => m.when(s) && !s.shipSeen[m.id]);
+    for (const m of out) s.shipSeen[m.id] = true;
+    if (out.length) save(s);
+    return out;
+  }
   function contractText(c) { const k = CONTRACTS.find(x => x.id === c.id); return k.text.replace('{n}', c.goal); }
 
   function checkUnlocks(s) {
@@ -1059,6 +1139,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     }
     if (Object.keys(s.crew).length > 1) add('crew', 'crew');
     if (s.unl.hub && (Object.keys(s.seen).length >= 5 || s.visits >= 2)) add('lab', 'lab');
+    ensureDaily(s);
   }
 
   // hết ván: cộng scrap mang về, ghi buff đã thấy, người đã cứu, tiến độ hợp đồng
@@ -1073,7 +1154,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     for (const c of g.rescued || []) if (!s.crew[c]) { s.crew[c] = true; rescued.push(c); }
     const st = Object.assign({}, g.stats, { deck: g.deck + 1 + (win ? 1 : 0) });
     const done = [];
-    for (const c of s.contracts) {
+    for (const c of s.contracts.concat(s.daily && !s.daily.claimed ? [s.daily] : [])) {
       const k = CONTRACTS.find(x => x.id === c.id);
       c.prog = k.best ? Math.max(c.prog, st[k.stat] || 0) : c.prog + (st[k.stat] || 0);
       if (c.prog >= c.goal && !c.ready) { c.ready = true; done.push(c); }
@@ -1104,7 +1185,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     return c.reward;
   }
 
-  root.META = { CONFIG, CREW, WORKSHOP, SHELVES, load, save, reset, runMeta, endRun, buy, claim, pool, shelfState, tomorrow, dayIndex, contractText, lvl, nextPodCrew, checkUnlocks };
+  root.META = { CONFIG, CREW, WORKSHOP, SHELVES, MODULES, LINES, claimDaily, nextGoal, newModules, load, save, reset, runMeta, endRun, buy, claim, pool, shelfState, tomorrow, dayIndex, contractText, lvl, nextPodCrew, checkUnlocks };
 })(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
@@ -1694,7 +1775,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     camX = null; roomCache.clear();
     $('end').classList.remove('show');
   }
-  window.__vs = { get g() { return g; }, VS, input: d => input(d), shoot: d => fire(d) };
+  window.__vs = { get g() { return g; }, VS, input: d => input(d), shoot: d => fire(d), get shipHits() { return shipHits; }, get shipSay() { return shipSay; } };
 
   const cx = x => BX + (x + 0.5) * TS;
   const cy = y => BY + (y + 0.5) * TS;
@@ -1899,6 +1980,10 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
           banner = { t: 0, life: 2.4, big: c.name.toUpperCase() + ' RESCUED!', name: '', tip: c.perk };
           shake = 10; freeze = 0.12; sfx('buff'); buzz(50); break;
         }
+        case 'revive':
+          hurtFlash = 0; shake = 6; p.hurtT = undefined; p.spinT = 0;
+          float('PATCHED!', cx(p.x), cy(p.y) - TS * 0.9, { col: '#b9d66a', size: Math.max(28, TS * 0.5), life: 1.3 });
+          sparks(cx(p.x), cy(p.y), 20, '185,214,106'); sfx('heal'); buzz(40); break;
         case 'win': showEnd(true); break;
         case 'lose': endTimer = 1.1; break;
         case 'wake': { const e = byId(ev.id); if (e) float('!', cx(e.x), cy(e.y) - TS * 0.9, { col: '#d9a53a', size: Math.max(26, TS * 0.46) }); break; }
@@ -1923,7 +2008,9 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     for (const c of r.rescued) lines.push(['Rescued', META.CREW.find(x => x.id === c).name]);
     if (r.newSeen.length) lines.push(['New in the Lab', r.newSeen.length + ' buff' + (r.newSeen.length > 1 ? 's' : '')]);
     if (r.done.length) lines.push(['Contracts done', r.done.length]);
-    $('endMeta').innerHTML = lines.map(([a, b]) => `<span>${a}</span><b>${b}</b>`).join('');
+    const ng = save.unl.workshop ? META.nextGoal(save) : null;
+    $('endMeta').innerHTML = lines.map(([a, b]) => `<span>${a}</span><b>${b}</b>`).join('') +
+      (ng ? `<div class="goal">${ng.need ? ng.need + ' more scrap for ' + ng.name : 'You can afford ' + ng.name + '!'}</div>` : '');
     $('endMeta').style.display = 'grid';
     $('again').textContent = save.unl.hub ? 'Back to ship' : 'Play again';
     const s = g.stats, best = +(localStorage.getItem('voidstep.best') || 0), reached = g.deck + 1 + (win ? 1 : 0);
@@ -1938,26 +2025,56 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
   }
   $('again').addEventListener('click', () => { audioInit(); if (save.unl.hub) showHub(); else newRun(); });
 
+  // ---------- vá khẩn cấp: 1 lần/ván, xem quảng cáo (bản demo: ô giả 3 giây) ----------
+  let adTimer = null;
+  function showPatch() {
+    $('adBox').style.display = 'none'; $('patchAd').style.display = ''; $('patchNo').style.display = '';
+    $('patch').classList.add('show');
+  }
+  function patchNo() { if (adTimer) return; $('patch').classList.remove('show'); showEnd(false); }
+  function patchAd() {
+    if (adTimer) return;
+    $('patchAd').style.display = 'none'; $('patchNo').style.display = 'none';
+    const box = $('adBox'); box.style.display = 'flex';
+    let n = 3;
+    const tick = () => {
+      box.innerHTML = `<b>${n}</b>Ad plays here (demo)`;
+      if (n-- <= 0) { clearInterval(adTimer); adTimer = null; $('patch').classList.remove('show'); VS.revive(g, META.CONFIG.patchHp); }
+    };
+    tick(); adTimer = setInterval(tick, 1000);
+  }
+  $('patchAd').addEventListener('click', () => { audioInit(); patchAd(); });
+  $('patchNo').addEventListener('click', patchNo);
+
   // ---------- tàu cứu hộ (sảnh meta) ----------
   const SPR = n => (window.VS_SPRITES || {})[n] || '';
   const crewSrc = id => SPR(id === 'janitor' ? 'hero_janitor' : 'crew_' + id);
-  const NEWS = { hub: 'The rescue ship picked you up!', workshop: 'Workshop open: spend scrap on upgrades.', contracts: 'Contracts board is up: finish jobs for scrap.',
-    crew: 'Crew bay open: pick who goes next.', lab: 'Specimen Lab: every buff you find gets a tube here.' };
-  let hubTab = 'workshop';
+  let hubTab = 'workshop', labSel = null;
   const seenTabs = {};
+  let say = [], shipSay = null, shipHits = [], shipFx = {};
+  const TAB_OF = { workshop: 'workshop', board: 'contracts', lab: 'lab', bunks: 'crew' };
   function showHub() {
     $('end').classList.remove('show');
     META.checkUnlocks(save);
-    if (save.news.length) {
-      $('hubNews').textContent = NEWS[save.news[save.news.length - 1]] || '';
-      $('hubNews').style.display = 'block';
-      const last = save.news[save.news.length - 1];
-      if (['workshop', 'contracts', 'crew', 'lab'].includes(last)) hubTab = last;
-      save.news = []; META.save(save);
-    } else $('hubNews').style.display = 'none';
+    // mỗi khu mới do BOLT giới thiệu, 1 câu 1 lần (hàng đợi, chạm để xem câu kế)
+    const mods = META.newModules(save);
+    for (const m of mods) { shipFx[m.id] = rt; say.push(m.say); }
+    for (const c of (lastResult && lastResult.rescued) || []) say.push(META.CREW.find(x => x.id === c).name + ' is aboard! Pick them in the Crew tab.');
+    const last = mods.filter(m => TAB_OF[m.id]).pop();
+    if (last) hubTab = TAB_OF[last.id];
+    save.news = []; META.save(save);
+    lastResult = null;
+    showSay();
     $('hub').classList.add('show');
     renderHub();
   }
+  function showSay() {
+    const box = $('hubNews');
+    if (!say.length) { box.style.display = 'none'; return; }
+    box.innerHTML = `<img src="${SPR('obj_vendor')}" alt=""><div class="say">${say[0]}${say.length > 1 ? '<div class="more">Tap for more (' + (say.length - 1) + ')</div>' : ''}</div>`;
+    box.style.display = 'flex';
+  }
+  $('hubNews').addEventListener('click', () => { say.shift(); showSay(); });
   function renderHub() {
     $('hubBank').textContent = save.bank;
     $('hubDay').textContent = 'Day ' + (META.dayIndex(save) + 1);
@@ -1978,7 +2095,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
         const ico = { hull: 'item_suit', feed: 'item_trigger', scanner: 'item_magnet', kit: 'obj_chest', breaker: 'item_heavy' }[w.id];
         return `<div class="row"><div class="ico"><img src="${SPR(ico)}" alt=""></div><div class="info"><div class="nm">${w.name} <span class="pips">${pips}</span></div><div class="ds">${w.desc}</div></div>${btn}</div>`;
       }).join('');
-      for (const b of P.querySelectorAll('[data-buy]')) b.onclick = () => { if (META.buy(save, b.dataset.buy)) { sfx('buff'); buzz(20); renderHub(); } };
+      for (const b of P.querySelectorAll('[data-buy]')) b.onclick = () => { const id = b.dataset.buy; if (META.buy(save, id)) { shipFx.buy = { id, t: rt }; sfx('buff'); buzz(20); renderHub(); } };
     } else if (hubTab === 'crew') {
       P.innerHTML = META.CREW.map(c => {
         const have = save.crew[c.id], picked = save.pick === c.id;
@@ -1993,47 +2110,168 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
       for (const b of P.querySelectorAll('[data-pick]')) b.onclick = () => { save.pick = b.dataset.pick; META.save(save); sfx('pick'); renderHub(); };
     } else if (hubTab === 'lab') {
       P.innerHTML = META.shelfState(save).map(sh => {
-        const tubes = sh.items.map(it => it.open
-          ? `<div class="tubei${it.seen ? '' : ' unseen'}" title="${it.seen ? UP(it.id).name : 'Not found yet'}"><img src="${SPR('item_' + it.id)}" alt=""></div>`
-          : '<div class="tubei lockd"><span class="lk">🔒</span></div>').join('');
+        const tubes = sh.items.map(it => {
+          const sel = labSel === it.id ? ' sel' : '';
+          return it.open
+            ? `<div class="tubei${it.seen ? '' : ' unseen'}${sel}" data-tube="${it.id}"><img src="${SPR('item_' + it.id)}" alt=""></div>`
+            : `<div class="tubei lockd${sel}" data-tube="${it.id}"><span class="lk">🔒</span></div>`;
+        }).join('');
         const locked = sh.items.some(it => !it.open), unseen = sh.items.filter(it => it.open && !it.seen).length;
         const hint = locked ? (unseen ? `Find ${unseen} more ${sh.name} buff${unseen > 1 ? 's' : ''} to unlock the next tube.` : 'Next tube unlocks on your next run.') : 'Shelf complete!';
-        return `<div class="shelf"><h3>${sh.name}</h3><div class="tubes">${tubes}</div><div class="hint">${hint}</div></div>`;
+        const it = sh.items.find(x => x.id === labSel);
+        let info = '';
+        if (it) {
+          if (!it.open) info = `<b>Locked.</b> Find every open ${sh.name} buff first.`;
+          else if (!it.seen) info = `<b>Not found yet.</b> Look in supply crates (any deck) or vending bays (decks 2-3).`;
+          else info = `<b>${UP(it.id).name}:</b> ${UP(it.id).desc}`;
+        }
+        return `<div class="shelf"><h3>${sh.name}</h3><div class="tubes">${tubes}</div>${info ? '<div class="labinfo">' + info + '</div>' : ''}<div class="hint">${hint}</div></div>`;
       }).join('');
+      for (const b of P.querySelectorAll('[data-tube]')) b.onclick = () => { labSel = labSel === b.dataset.tube ? null : b.dataset.tube; renderHub(); };
     } else if (hubTab === 'contracts') {
-      P.innerHTML = save.contracts.map((c, i) => {
+      const row = (c, attr, daily) => {
         const k = Math.min(1, c.prog / c.goal);
-        const btn = c.ready ? `<button class="buy" data-claim="${i}">+${c.reward} ⚙</button>` : `<button class="buy" disabled>${Math.min(c.prog, c.goal)}/${c.goal}</button>`;
-        return `<div class="row"><div class="info"><div class="nm">${META.contractText(c)}</div><div class="bar"><i style="width:${k * 100}%"></i></div></div>${btn}</div>`;
-      }).join('');
+        const btn = c.claimed ? '<button class="buy" disabled>Done</button>' : c.ready ? `<button class="buy" ${attr}>+${c.reward} ⚙</button>` : `<button class="buy" disabled>${Math.min(c.prog, c.goal)}/${c.goal}</button>`;
+        const tag = daily ? `<span class="tag">DAILY</span>` : '';
+        const sub = daily ? `<div class="ds">${c.claimed ? 'New daily contract tomorrow.' : 'Big reward. Changes every day.'}</div>` : '';
+        return `<div class="row${daily ? ' daily' : ''}"><div class="info"><div class="nm">${tag}${META.contractText(c)}</div>${sub}<div class="bar"><i style="width:${k * 100}%"></i></div></div>${btn}</div>`;
+      };
+      P.innerHTML = (save.daily ? row(save.daily, 'data-daily="1"', true) : '') + save.contracts.map((c, i) => row(c, `data-claim="${i}"`, false)).join('');
+      const d = P.querySelector('[data-daily]');
+      if (d) d.onclick = () => { if (META.claimDaily(save)) { sfx('clear'); buzz(25); renderHub(); } };
       for (const b of P.querySelectorAll('[data-claim]')) b.onclick = () => { if (META.claim(save, +b.dataset.claim)) { sfx('clear'); buzz(25); renderHub(); } };
     } else P.innerHTML = '';
     drawShip();
   }
-  // cảnh tàu cứu hộ: đèn sáng dần theo tiến trình, đồng đội đã cứu đứng thành hàng
+  // cảnh tàu cứu hộ: các khu hiện dần theo mốc (khu mới loé sáng), BOLT đứng góc trái, đồng đội đứng giữa; chạm để nghe thoại
+  let shipW = 0, shipH = 0;
   function drawShip() {
     const c = $('hubShip'), w = c.clientWidth || SW - 24, h = c.clientHeight || 150, dpr = Math.min(2, window.devicePixelRatio || 1);
-    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    if (w !== shipW || h !== shipH) { shipW = w; shipH = h; c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
     const x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const floorY = h * 0.78;
     x.fillStyle = '#2b2119'; x.fillRect(0, 0, w, h);
-    x.fillStyle = '#3a2e24'; x.fillRect(0, h * 0.72, w, h * 0.28);
-    x.fillStyle = '#5a4630'; x.fillRect(0, h * 0.72, w, 3);
-    const lit = Object.keys(save.unl).length + Object.keys(save.crew).length - 1;
+    x.strokeStyle = '#3a2e24'; x.lineWidth = 2;
+    for (let i = 1; i < 6; i++) { x.beginPath(); x.moveTo(w * i / 6, 22); x.lineTo(w * i / 6, floorY); x.stroke(); }
+    x.fillStyle = '#3a2e24'; x.fillRect(0, floorY, w, h - floorY);
+    x.fillStyle = '#5a4630'; x.fillRect(0, floorY, w, 3);
+    const mods = META.MODULES.filter(m => m.when(save)).map(m => m.id);
+    const lit = 1 + mods.length + Object.keys(save.crew).length - 1;
     for (let i = 0; i < 8; i++) {
       const lx = w * (0.08 + i * 0.12), on = i < lit;
-      x.beginPath(); x.arc(lx, 14, 6, 0, 7); x.fillStyle = on ? '#f1d36a' : '#4a3a2c'; x.fill(); x.lineWidth = 2; x.strokeStyle = '#1b1410'; x.stroke();
-      if (on) { const gr = x.createRadialGradient(lx, 14, 2, lx, 14, 46); gr.addColorStop(0, 'rgba(241,211,106,0.25)'); gr.addColorStop(1, 'rgba(241,211,106,0)'); x.fillStyle = gr; x.fillRect(lx - 46, 0, 92, 70); }
+      x.beginPath(); x.arc(lx, 12, 5, 0, 7); x.fillStyle = on ? '#f1d36a' : '#4a3a2c'; x.fill(); x.lineWidth = 2; x.strokeStyle = '#1b1410'; x.stroke();
+      if (on) { const gr = x.createRadialGradient(lx, 12, 2, lx, 12, 44); gr.addColorStop(0, 'rgba(241,211,106,0.22)'); gr.addColorStop(1, 'rgba(241,211,106,0)'); x.fillStyle = gr; x.fillRect(lx - 44, 0, 88, 66); }
     }
+    // khu trên vách sau: chưa mở = hốc tối có băng chéo "đang sửa"
+    const SLOTS = [['workshop', 0.2], ['board', 0.4], ['lab', 0.6], ['trophy', 0.8]];
+    for (const [id, fx] of SLOTS) {
+      const mx = w * fx, my = floorY - 4, on = mods.includes(id);
+      const bw = Math.min(54, w * 0.15), bh = h * 0.42;
+      if (!on) {
+        x.fillStyle = '#1b1410'; x.fillRect(mx - bw / 2, my - bh, bw, bh);
+        x.strokeStyle = 'rgba(217,165,58,0.35)'; x.lineWidth = 4;
+        x.beginPath(); x.moveTo(mx - bw / 2, my - bh); x.lineTo(mx + bw / 2, my); x.moveTo(mx + bw / 2, my - bh); x.lineTo(mx - bw / 2, my); x.stroke();
+        continue;
+      }
+      x.save(); x.translate(mx, my);
+      if (id === 'workshop') {
+        x.fillStyle = '#6d5a42'; x.fillRect(-bw / 2, -bh * 0.38, bw, bh * 0.1); x.fillRect(-bw / 2 + 3, -bh * 0.28, 5, bh * 0.28); x.fillRect(bw / 2 - 8, -bh * 0.28, 5, bh * 0.28);
+        const im = ART.img.item_heavy; if (im && im.complete) x.drawImage(im, -bw * 0.4, -bh * 0.75, bw * 0.45, bw * 0.45 * im.naturalHeight / im.naturalWidth);
+        x.fillStyle = '#86827a'; x.fillRect(bw * 0.05, -bh * 0.55, bw * 0.35, bh * 0.17);
+      } else if (id === 'board') {
+        x.fillStyle = '#5d5846'; x.fillRect(-bw / 2, -bh, bw, bh * 0.75); x.strokeStyle = '#1b1410'; x.lineWidth = 2; x.strokeRect(-bw / 2, -bh, bw, bh * 0.75);
+        for (let k = 0; k < 3; k++) { x.fillStyle = k === 0 && save.daily ? '#d9a53a' : '#efe2c4'; x.fillRect(-bw / 2 + 5, -bh + 6 + k * bh * 0.22, bw - 10, bh * 0.15); }
+      } else if (id === 'lab') {
+        for (let k = 0; k < 3; k++) {
+          const tx = -bw / 2 + 6 + k * (bw - 12) / 2, tw = 10;
+          x.fillStyle = 'rgba(207,227,214,0.25)'; x.fillRect(tx - tw / 2, -bh * 0.9, tw, bh * 0.8);
+          x.fillStyle = ['#6e7b4a', '#4f7fa0', '#b04a6a'][k]; x.globalAlpha = 0.6; x.fillRect(tx - tw / 2, -bh * 0.6, tw, bh * 0.5); x.globalAlpha = 1;
+          x.strokeStyle = '#1b1410'; x.lineWidth = 2; x.strokeRect(tx - tw / 2, -bh * 0.9, tw, bh * 0.8);
+        }
+      } else if (id === 'trophy') {
+        x.fillStyle = '#6d5a42'; x.fillRect(-bw / 2, -bh * 0.3, bw, 5);
+        x.fillStyle = '#cf9f44'; x.beginPath(); x.moveTo(-14, -bh * 0.3); x.lineTo(-14, -bh * 0.6); x.lineTo(-7, -bh * 0.45); x.lineTo(0, -bh * 0.7); x.lineTo(7, -bh * 0.45); x.lineTo(14, -bh * 0.6); x.lineTo(14, -bh * 0.3); x.closePath(); x.fill();
+        x.strokeStyle = '#1b1410'; x.lineWidth = 2; x.stroke();
+      }
+      // khu mới mở: loé sáng 2 giây
+      const t0 = shipFx[id];
+      if (t0 !== undefined && rt - t0 < 2.2) {
+        const k = (rt - t0) / 2.2;
+        x.globalAlpha = (1 - k) * (0.6 + 0.4 * Math.sin(rt * 14));
+        x.strokeStyle = '#f6efdc'; x.lineWidth = 3; x.strokeRect(-bw / 2 - 4, -bh - 4, bw + 8, bh + 8);
+        x.fillStyle = '#f1d36a'; for (let i = 0; i < 6; i++) { const a = i + rt * 3; x.fillRect(Math.cos(a) * bw * 0.7 - 2, -bh / 2 + Math.sin(a) * bh * 0.6 - 2, 4, 4); }
+        x.globalAlpha = 1;
+      }
+      x.restore();
+    }
+    shipHits = [];
+    // BOLT (robot của tàu) ở góc trái
+    const bolt = ART.img.vendor;
+    if (bolt && bolt.complete && bolt.naturalWidth) {
+      const hh = h * 0.5, ww = hh * bolt.naturalWidth / bolt.naturalHeight, bx = 8;
+      x.drawImage(bolt, bx, floorY + 6 - hh, ww, hh);
+      shipHits.push({ who: 'bolt', x: bx, y: floorY + 6 - hh, w: ww, h: hh });
+    }
+    // đồng đội: người được chọn đứng giữa, cao hơn, có tim máu tối đa trên đầu
     const crew = META.CREW.filter(cc => save.crew[cc.id]);
-    const step = Math.min(90, w / (crew.length + 1));
+    const step = Math.min(76, (w - 80) / (crew.length + 0.5));
     crew.forEach((cc, i) => {
       const im = ART.img[cc.id === 'janitor' ? 'crew_janitor' : 'crew_' + cc.id];
-      const px = w / 2 + (i - (crew.length - 1) / 2) * step, base = h * 0.86, hh = save.pick === cc.id ? h * 0.72 : h * 0.6;
-      if (save.pick === cc.id) { x.fillStyle = 'rgba(241,211,106,0.18)'; x.beginPath(); x.moveTo(px - 10, 0); x.lineTo(px + 10, 0); x.lineTo(px + 46, base); x.lineTo(px - 46, base); x.closePath(); x.fill(); }
-      x.fillStyle = 'rgba(0,0,0,0.35)'; x.beginPath(); x.ellipse(px, base, 26, 7, 0, 0, 7); x.fill();
-      if (im && im.complete && im.naturalWidth) { const ww = hh * im.naturalWidth / im.naturalHeight; x.drawImage(im, px - ww / 2, base - hh + Math.sin(rt * 3 + i) * 2, ww, hh); }
+      const picked = save.pick === cc.id;
+      const px = w * 0.56 + (i - (crew.length - 1) / 2) * step, base = h * 0.92, hh = picked ? h * 0.66 : h * 0.52;
+      if (picked) { x.fillStyle = 'rgba(241,211,106,0.16)'; x.beginPath(); x.moveTo(px - 8, 0); x.lineTo(px + 8, 0); x.lineTo(px + 40, base); x.lineTo(px - 40, base); x.closePath(); x.fill(); }
+      x.fillStyle = 'rgba(0,0,0,0.35)'; x.beginPath(); x.ellipse(px, base, 22, 6, 0, 0, 7); x.fill();
+      let top = base - hh;
+      if (im && im.complete && im.naturalWidth) {
+        const ww = hh * im.naturalWidth / im.naturalHeight, bob = Math.sin(rt * 3 + i) * 1.5;
+        x.drawImage(im, px - ww / 2, base - hh + bob, ww, hh);
+        shipHits.push({ who: cc.id, x: px - ww / 2, y: base - hh, w: ww, h: hh });
+      }
+      if (picked) {
+        const n = 5 + META.lvl(save, 'hull'), r = 5, gap = 11, y0 = top - 8;
+        const pop = shipFx.buy && shipFx.buy.id === 'hull' ? Math.max(0, 1 - (rt - shipFx.buy.t) / 0.6) : 0;
+        for (let k = 0; k < n; k++) {
+          const hx = px - (n - 1) * gap / 2 + k * gap, s = k === n - 1 ? 1 + pop * 0.9 : 1;
+          x.save(); x.translate(hx, y0); x.scale(s, s);
+          x.beginPath(); x.moveTo(0, r * 0.9); x.bezierCurveTo(-r * 1.7, -r * 0.2, -r * 0.7, -r * 1.4, 0, -r * 0.45); x.bezierCurveTo(r * 0.7, -r * 1.4, r * 1.7, -r * 0.2, 0, r * 0.9);
+          x.fillStyle = '#c8442f'; x.fill(); x.lineWidth = 1.5; x.strokeStyle = '#1b1410'; x.stroke(); x.restore();
+        }
+      }
     });
+    // mua ở xưởng: chữ bay lên trên nhân vật được chọn
+    if (shipFx.buy && rt - shipFx.buy.t < 1.2) {
+      const k = (rt - shipFx.buy.t) / 1.2, w0 = META.WORKSHOP.find(q => q.id === shipFx.buy.id);
+      const txt2 = shipFx.buy.id === 'hull' ? '+1 MAX HP' : w0.name + ' ' + ['I', 'II', 'III'][META.lvl(save, w0.id) - 1] + '!';
+      x.globalAlpha = 1 - k; x.font = `800 16px ${FONT}`; x.textAlign = 'center'; x.lineWidth = 4; x.strokeStyle = '#1b1410';
+      x.strokeText(txt2, w * 0.56, h * 0.3 - k * 20); x.fillStyle = '#f1d36a'; x.fillText(txt2, w * 0.56, h * 0.3 - k * 20); x.globalAlpha = 1;
+    }
+    // bong bóng thoại
+    if (shipSay && rt - shipSay.t < 2.6) {
+      const hit = shipHits.find(q => q.who === shipSay.who);
+      if (hit) {
+        x.font = `700 13px ${FONT}`;
+        const tw = Math.min(w * 0.62, x.measureText(shipSay.text).width + 16), bx = clamp(hit.x + hit.w / 2 - tw / 2, 4, w - tw - 4);
+        const lines = []; let line = '';
+        for (const word of shipSay.text.split(' ')) { const t = line ? line + ' ' + word : word; if (x.measureText(t).width > tw - 14 && line) { lines.push(line); line = word; } else line = t; }
+        lines.push(line);
+        const bh = lines.length * 15 + 10, by = Math.max(24, hit.y - bh - 4);
+        x.fillStyle = '#efe2c4'; x.strokeStyle = '#1b1410'; x.lineWidth = 2.5;
+        x.beginPath(); ART.rrect(bx, by, tw, bh, 8)(x); x.fill(); x.stroke();
+        x.fillStyle = '#2b1d16'; x.textAlign = 'center'; x.textBaseline = 'middle';
+        lines.forEach((l, i) => x.fillText(l, bx + tw / 2, by + 12 + i * 15));
+      }
+    }
   }
+  $('hubShip').addEventListener('pointerdown', e => {
+    const r = $('hubShip').getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+    const hit = shipHits.slice().reverse().find(q => px >= q.x && px <= q.x + q.w && py >= q.y && py <= q.y + q.h);
+    if (!hit) return;
+    const lines = META.LINES[hit.who] || ['...'];
+    const prev = shipSay && shipSay.who === hit.who ? shipSay.i : -1;
+    shipSay = { who: hit.who, i: (prev + 1) % lines.length, t: rt };
+    shipSay.text = lines[shipSay.i];
+    sfx('tick'); buzz(8);
+  });
   $('hubLaunch').addEventListener('click', () => { audioInit(); sfx('door'); newRun(); });
 
   // ---------- input: D-pad 4 nút + phím ----------
@@ -2087,6 +2325,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     b.addEventListener('contextmenu', e => e.preventDefault());
   }
   addEventListener('keydown', e => {
+    if ($('patch').classList.contains('show')) { if (e.code === 'Space' || e.code === 'Enter') patchAd(); if (e.code === 'Escape') patchNo(); return; }
     if ($('end').classList.contains('show')) { if (e.code === 'Space' || e.code === 'Enter') $('again').click(); return; }
     if (DEV && e.code === 'KeyR') { save = META.reset(); location.reload(); }
     if (DEV && e.code === 'KeyM') { save.bank += 100; META.save(save); if ($('hub').classList.contains('show')) renderHub(); }
@@ -2784,7 +3023,8 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     updatePress();
     VS.update(g, ldt);
     drain();
-    if (endTimer > 0) { endTimer -= dt; if (endTimer <= 0) { endTimer = -1; showEnd(false); } }
+    if (endTimer > 0) { endTimer -= dt; if (endTimer <= 0) { endTimer = -1; if (!g.patched) showPatch(); else showEnd(false); } }
+    if ($('hub').classList.contains('show')) drawShip();
     const k = Math.min(1, dt * 22);
     for (const e of [g.player].concat(g.enemies)) {
       if (e.rx === undefined) { e.rx = e.x; e.ry = e.y; }
