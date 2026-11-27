@@ -53,6 +53,8 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
 #hubPrev, #hubNext, #hubLaunch { display: none !important; }
 /* nút FIGHT ở ô giữa D-pad (Mai 27/11): chạm là vào trận */
 #fightBtn { border-radius: 18px; padding: 0; }
+#fightBtn.hint { animation: padhint .8s ease-in-out infinite; }
+#hubCard.guide .bump.act { outline: 4px solid #f3d27a; outline-offset: 3px; }
 #fightBtn .big { -webkit-text-stroke: 4px #2b1d16; letter-spacing: .5px; }
 #hubCard { display: none; }
 #hubTomorrow.corner { flex-direction: column; justify-content: center; white-space: normal; text-align: center; padding: 6px; gap: 3px; font-size: 12px; line-height: 1.15; border-radius: 16px; }
@@ -76,6 +78,12 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
 .card2.compact .bar { margin-top: 3px; }
 .card2.compact .bump { min-width: 76px; padding: 4px 6px; font-size: 11px; }
 .card2.compact .bump b { font-size: 16px; }
+/* tag giá bấm được trên thẻ ở tàu (Mai 27/11) */
+.bump.act { font: inherit; cursor: pointer; animation: tagpulse 1.6s ease-in-out infinite; }
+.bump.act:active { transform: translateY(3px); box-shadow: 0 1px 0 #2b1d16; animation: none; }
+@keyframes tagpulse { 50% { transform: scale(1.05); } }
+.card2.nudge .bump.act { animation: tagnudge .45s ease-out; }
+@keyframes tagnudge { 20% { transform: scale(1.18) rotate(-4deg); } 45% { transform: scale(1.12) rotate(4deg); } 70% { transform: scale(1.06) rotate(-2deg); } }
 .hatchI { width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle, #1b1726 55%, #d9a53a 57%); border: 3px solid #2b1d16; box-sizing: border-box; }
 /* nút ✕ góc HUD lúc đang đánh (Mai 27/11): mở bảng tạm dừng; chỉ hiện khi được bỏ chuyến */
 #quitBtn { position: fixed; z-index: 3; width: 40px; height: 40px; font-size: 20px; border-radius: 12px; box-shadow: 0 4px 0 #2b1d16; display: none; padding: 0; }
@@ -279,6 +287,8 @@ body:has(.ov.show) #pad { visibility: hidden; }
       player: { x: 3, y: 6, hp: hp0, maxHp: hp0, cd: 0, queue: null, lastDir: null, streak: 0, inv: 0, adren: false, kills: 0, face: 'right' },
       stats: { kills: 0, vented: 0, close: 0, slams: 0, clonks: 0, oops: 0, time: 0, hits: 0, shots: 0, parries: 0, rooms: 0, scrap: 0, buffs: 0, crates: 0, doors: 0 },
       lostTo: null,
+      // Mai 27/11: ván đầu chỉ 2 deck để sớm tới phần tàu (meta); từ ván 2 đủ 3 deck
+      lastDeck: meta.firstRun === true ? 1 : DECKS.length - 1,
     };
     makeDeck(g, 0);
     for (let i = 0; i < (meta.kit || 0); i++) { const id = rollUps(g, 1)[0]; if (id) grant(g, id); } // Starter Kit
@@ -611,9 +621,11 @@ body:has(.ov.show) #pad { visibility: hidden; }
     }
   }
 
+  const lastDeck = g => (g.lastDeck === undefined ? DECKS.length - 1 : g.lastDeck);
   function descend(g) {
     emit(g, { type: 'descend' });
-    if (g.deck < DECKS.length - 1) makeDeck(g, g.deck + 1);
+    if (g.deck < lastDeck(g)) makeDeck(g, g.deck + 1);
+    else { g.phase = 'won'; g.extracted = true; emit(g, { type: 'win', extract: true }); } // deck cuối của ván ngắn: cửa sập đưa về tàu
   }
 
   function openChest(g, o, dir) {
@@ -1184,6 +1196,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     try { s = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { s = null; }
     if (!s || s.v !== 1) s = fresh();
     s.beasts = s.beasts || {}; // save cũ chưa có Xeno Lab
+    s.guide = s.guide || {};   // hướng dẫn ở tàu: walk / buy / fight
     if (Date.now() - (s.lastOpen || 0) > CONFIG.visitGapMs) { s.visits = (s.visits || 1) + 1; log(s, 'visit:' + s.visits); }
     s.lastOpen = Date.now();
     checkUnlocks(s);
@@ -1298,8 +1311,9 @@ body:has(.ov.show) #pad { visibility: hidden; }
   function endRun(s, g, win) {
     const keep = win ? CONFIG.keepOnWin : Math.min(1, CONFIG.keepOnLoss + 0.15 * lvl(s, 'scanner'));
     const kept = Math.floor(g.scrap * keep);
-    s.bank += kept; s.runs++; if (win) s.wins++;
-    s.bestDeck = Math.max(s.bestDeck, g.deck + 1 + (win ? 1 : 0));
+    const queen = win && !g.extracted; // ván ngắn (2 deck) về tàu = hoàn thành nhưng không phải hạ Queen
+    s.bank += kept; s.runs++; if (queen) s.wins++;
+    s.bestDeck = Math.max(s.bestDeck, g.deck + 1 + (queen ? 1 : 0));
     const newSeen = [];
     for (const id of Object.keys(g.ups)) if (!s.seen[id]) { s.seen[id] = true; newSeen.push(id); }
     // alien gặp trong ván → Xeno Lab (1 = mới, chờ nhận thưởng; 2 = đã nhận)
@@ -1308,7 +1322,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     for (const t of Object.keys(g.seen || {})) if (BEASTS.some(b => b.id === t) && !s.beasts[t]) { s.beasts[t] = 1; newBeasts.push(t); }
     const rescued = [];
     for (const c of g.rescued || []) if (!s.crew[c]) { s.crew[c] = true; rescued.push(c); }
-    const st = Object.assign({}, g.stats, { deck: g.deck + 1 + (win ? 1 : 0) });
+    const st = Object.assign({}, g.stats, { deck: g.deck + 1 + (queen ? 1 : 0) });
     const done = [];
     for (const c of s.contracts.concat(s.daily && !s.daily.claimed ? [s.daily] : [])) {
       const k = CONTRACTS.find(x => x.id === c.id);
@@ -2328,8 +2342,8 @@ body:has(.ov.show) #pad { visibility: hidden; }
     $('again').textContent = save.unl.hub ? 'Back to ship' : 'Play again';
     const s = g.stats, best = +(localStorage.getItem('voidstep.best') || 0), reached = g.deck + 1 + (win ? 1 : 0);
     if (reached > best) localStorage.setItem('voidstep.best', reached);
-    $('endT').textContent = win ? 'SHIP CLEARED!' : 'EATEN ON DECK ' + (g.deck + 1);
-    $('endS').textContent = win ? 'The hive is gone. Nice mopping.' : 'Best: deck ' + Math.min(3, Math.max(best, g.deck + 1)) + ' of 3';
+    $('endT').textContent = win ? (g.extracted ? 'DECKS CLEARED!' : 'SHIP CLEARED!') : 'EATEN ON DECK ' + (g.deck + 1);
+    $('endS').textContent = win ? (g.extracted ? 'Nice first shift. The rescue ship is waiting.' : 'The hive is gone. Nice mopping.') : 'Best: deck ' + Math.min(3, Math.max(best, g.deck + 1)) + ' of 3';
     const t = Math.round(s.time);
     $('endStats').innerHTML = [['Time', Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0')], ['Rooms explored', s.rooms], ['Aliens down', s.kills],
       ['Vented', s.vented], ['Parries', s.parries], ['Scrap found', s.scrap], ['Buffs', s.buffs]].map(([a, b]) => `<span>${a}</span><b>${b}</b>`).join('');
@@ -2604,6 +2618,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     const o = hubObjs().find(q => q.x === nx && q.y === ny);
     if (o) { HP.bonk = { d, t: 0 }; HP.cd = 0.16; hubUse(o); updateCard(); return; }
     HP.x = nx; HP.y = ny; HP.hopT = 0; HP.cd = HUB_STEP; sfx('step');
+    if (!(save.guide || {}).walk && (HP.walked = (HP.walked || 0) + 1) >= 3) guideDone('walk');
     updateCard();
   }
   const objPos = o => [hx(o.x + 0.5), hy(o.y + 0.2)];
@@ -2613,19 +2628,32 @@ body:has(.ov.show) #pad { visibility: hidden; }
     shipSay = { who, i: (prev + 1) % lines.length, t: rt };
     shipSay.text = lines[shipSay.i];
   }
+  // Mai 27/11: ở tàu, mua / đổi người / nhận thưởng bằng CHẠM TAG giá trên thẻ, không bằng bước/húc vào đồ
+  const TAG_KINDS = { ws: 1, crew: 1, paper: 1, beast: 1 };
   function hubUse(o) {
+    hubAction(o); // Mai 27/11: húc vẫn dùng được, chạm tag trên thẻ cũng được (2 cách)
+  }
+  function cardNudge() { const C = $('hubCard'); C.classList.remove('nudge'); void C.offsetWidth; C.classList.add('nudge'); }
+  function hubAct(act, id) {
+    const kind = { buy: 'ws', pick: 'crew', claim: 'paper', beast: 'beast' }[act];
+    const key = kind === 'paper' && id !== 'daily' ? +id : id;
+    const o = hubObjs().find(q => q.kind === kind && q.id === key);
+    if (!o) return;
+    audioInit(); guardBack(); hubAction(o);
+  }
+  function hubAction(o) {
     const [x, y] = objPos(o);
     if (o.kind === 'ws') {
       const w = META.WORKSHOP.find(q => q.id === o.id), l = META.lvl(save, o.id), cost = META.CONFIG.workshopCost[l];
       if (o.id === 'stock') talk('bolt');
       if (l >= w.max) { hubFloats.push({ text: 'MAX', x, y, t: 0 }); sfx('tick'); return; }
       if (!META.buy(save, o.id)) { hubFloats.push({ text: 'Need ' + (cost - save.bank) + ' more', x, y, t: 0, col: '#e8876a' }); sfx('locked'); buzz(30); return; }
-      shipFx.buy = { id: o.id, t: rt }; sfx('buff'); buzz(20); bankBump = 1;
+      shipFx.buy = { id: o.id, t: rt }; sfx('buff'); buzz(20); bankBump = 1; guideDone('buy');
       hubBurst(x, y); hubFloats.push({ text: o.id === 'hull' ? '+1 MAX HP' : w.name + ' ' + ['I', 'II', 'III'][META.lvl(save, o.id) - 1] + '!', x, y: y - HL.TS * 0.4, t: 0 });
     } else if (o.kind === 'crew') {
       if (!save.crew[o.id]) { hubFloats.push({ text: 'Not aboard yet', x, y, t: 0, col: '#cbb89a' }); sfx('tick'); return; }
       // húc đồng đội = đổi người: mình thành họ, người cũ về đứng trước giường
-      save.pick = o.id; META.save(save); sfx('pick'); buzz(15);
+      save.pick = o.id; META.save(save); sfx('pick'); buzz(15); guideDone('buy');
       hubBurst(hx(HP.x + 0.5), hy(HP.y + 0.3), '#efe2c4');
       talk(o.id);
     } else if (o.kind === 'paper') {
@@ -2633,17 +2661,19 @@ body:has(.ov.show) #pad { visibility: hidden; }
       const c = pp[1];
       if (c.ready && !c.claimed) {
         const r = o.id === 'daily' ? (META.claimDaily(save) ? c.reward : 0) : META.claim(save, o.id);
+        if (r) guideDone('buy');
         if (r) { sfx('clear'); buzz(25); bankBump = 1; hubBurst(x, y, '#b9d66a'); hubFloats.push({ text: '+' + r + ' scrap', x, y: y - HL.TS * 0.3, t: 0 }); }
       } else { hubFloats.push({ text: c.claimed ? 'Paid' : Math.min(c.prog, c.goal) + ' / ' + c.goal, x, y, t: 0, col: '#cbb89a' }); sfx('tick'); }
     } else if (o.kind === 'beast') {
       const st = (save.beasts || {})[o.id];
       if (st === 1) {
         const r = META.claimBeast(save, o.id);
+        if (r) guideDone('buy');
         if (r) { sfx('clear'); buzz(25); bankBump = 1; hubBurst(x, y, '#d9a53a'); hubFloats.push({ text: '+' + r + ' scrap', x, y: y - HL.TS * 0.3, t: 0 }); }
       } else { hubFloats.push({ text: st ? 'Logged' : 'Not met yet', x, y, t: 0, col: '#cbb89a' }); sfx('tick'); }
     } else if (o.kind === 'trophy') { talk('trophy'); sfx('tick'); }
     else if (o.kind === 'hatch') {
-      if (HP.armT && rt - HP.armT < 4) { HP.armT = 0; audioInit(); sfx('door'); newRun(); return; }
+      if (HP.armT && rt - HP.armT < 4) { HP.armT = 0; audioInit(); sfx('door'); guideDone('fight'); newRun(); return; }
       HP.armT = rt; sfx('chest'); buzz(15); hubFloats.push({ text: 'Bump again to dive in!', x, y: y - HL.TS * 0.2, t: 0 });
     }
     else sfx('tick');
@@ -2852,6 +2882,40 @@ body:has(.ov.show) #pad { visibility: hidden; }
     });
   }
 
+  // ---------- hướng dẫn lần đầu ở tàu (Mai 27/11): đi → mua bằng tag/húc → FIGHT ----------
+  function guideDone(k) {
+    save.guide = save.guide || {}; if (save.guide[k]) return;
+    save.guide[k] = 1; if (k !== 'walk') save.guide.walk = 1; if (k === 'fight') save.guide.buy = save.guide.buy || 0; // mua/xuất phát được = đã biết đi
+    META.save(save);
+  }
+  function canSpend() {
+    const ws = META.WORKSHOP.some(w => { const l = META.lvl(save, w.id); return l < w.max && META.CONFIG.workshopCost[l] <= save.bank; });
+    const cl = boardPapers().some(([, c]) => c.ready && !c.claimed) || Object.values(save.beasts || {}).some(v => v === 1);
+    return ws || cl;
+  }
+  function hubGuide() {
+    const G = save.guide || {};
+    if (!G.walk) return { text: 'Walk around the ship with the arrows', pad: true };
+    if (!G.buy && canSpend()) {
+      const o = adjObj();
+      if (o && TAG_KINDS[o.kind] && document.querySelector('#hubCard [data-act]')) return { text: 'Tap the gold tag (or bump it) to buy', tag: true };
+      // chỉ vào máy gần nhất mua được (trong phòng hiện tại)
+      const t = hubObjs().filter(q => q.kind === 'ws' && (() => { const w = META.WORKSHOP.find(z => z.id === q.id), l = META.lvl(save, q.id); return l < w.max && META.CONFIG.workshopCost[l] <= save.bank; })())
+        .sort((a, b) => (Math.abs(a.x - HP.x) + Math.abs(a.y - HP.y)) - (Math.abs(b.x - HP.x) + Math.abs(b.y - HP.y)))[0];
+      return { text: t ? 'Walk up to a machine you can afford' : 'You have scrap to spend. Find a gold tag!', target: t };
+    }
+    if (!G.fight) return { text: 'Tap FIGHT to start your next run', fight: true };
+    return null;
+  }
+  function drawGuide() {
+    const gd = hubOn() && !say.length ? hubGuide() : null;
+    setHintBtn(gd && gd.pad ? 'up' : null);
+    $('fightBtn').classList.toggle('hint', !!(gd && gd.fight));
+    $('hubCard').classList.toggle('guide', !!(gd && gd.tag));
+    if (!gd) return;
+    if (gd.target) arrow(hx(gd.target.x + 0.5), hy(gd.target.y) - HL.TS * 0.62, 'down', HL.TS * 0.42);
+    bubble(gd.text, SW / 2, HL.y + HL.TS * 0.32, Math.max(14, Math.min(18, HL.TS * 0.3)));
+  }
   function hubBurst(x, y, col) {
     for (let i = 0; i < 16; i++) { const a = Math.random() * 7, v = 60 + Math.random() * 140; hubParts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 60, t: 0, life: 0.5 + Math.random() * 0.3, col: col || '#f1d36a' }); }
   }
@@ -2867,6 +2931,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     const P = HL.PAD, side = 7 * HL.TS + P * 2;
     ctx.drawImage(hubRoomCanvas(hubRoom), HL.x - P, HL.y - P, side, side);
     drawHubRoom(dt);
+    drawGuide();
     const i = ROOMS.findIndex(q => q.id === hubRoom);
     for (const sd of [-1, 1]) { const nb = ROOMS[i + sd]; if (nb) hubDoor(sd, !roomOpen(nb.id), roomOpen(nb.id) && newRooms.has(nb.id) && !seenRooms[nb.id]); }
     ctx.restore(); ctx.globalAlpha = 1;
@@ -2893,6 +2958,8 @@ body:has(.ov.show) #pad { visibility: hidden; }
   const tileH = (inner, dark) => `<div class="tile${dark ? ' dark' : ''}">${inner}</div>`;
   const imgH = (src, sil) => src ? `<img src="${src}" alt=""${sil ? ' class="sil"' : ''}>` : '';
   const bumpH = (main, sub, on) => `<div class="bump${on ? ' mus' : ''}"><b>${main}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
+  // tag vàng bấm được: chạm là mua / đổi người / nhận thưởng
+  const actH = (main, sub, act, id) => `<button class="bump mus act" data-act="${act}" data-id="${id}"><b>${main}</b><span>${sub}</span></button>`;
   function cardHTML(o) {
     if (!roomOpen(hubRoom)) {
       const R = ROOMS.find(q => q.id === hubRoom);
@@ -2904,13 +2971,13 @@ body:has(.ov.show) #pad { visibility: hidden; }
       const w = META.WORKSHOP.find(q => q.id === s), l = META.lvl(save, s), max = l >= w.max, cost = META.CONFIG.workshopCost[l];
       const [lab, f] = WS_FX[s];
       const fx = max ? `${lab}: <b>${f(l)}</b> (max)` : `${lab}: ${f(l)} → <b>${f(l + 1)}</b>`;
-      const b = max ? bumpH('MAX', '', false) : save.bank >= cost ? bumpH(cost + ' ' + NUT, 'Bump to buy', true) : bumpH(cost + ' ' + NUT, 'Need ' + (cost - save.bank) + ' more', false);
+      const b = max ? bumpH('MAX', '', false) : save.bank >= cost ? actH(cost + ' ' + NUT, 'Tap or bump to buy', 'buy', s) : bumpH(cost + ' ' + NUT, 'Need ' + (cost - save.bank) + ' more', false);
       return tileH(imgH(SPR(WS_ICO[s]))) + `<div class="info"><div class="nm one">${w.name}${pipsH(l, w.max)}</div><div class="ds one">${w.desc}</div><div class="fx">${fx}</div></div>` + b;
     }
     if (o.kind === 'crew') {
       const c = META.CREW.find(q => q.id === s), have = !!save.crew[c.id], di = META.dayIndex(save);
       const st = have ? '' : c.day > di ? 'Distress signal in ' + (c.day - di) + ' day' + (c.day - di > 1 ? 's' : '') + '.' : 'Rescue pod on deck ' + (c.deck + 1) + '. Break the cocoon.';
-      return tileH(imgH(crewSrc(c.id), !have), !have) + `<div class="info"><div class="nm">${c.name}</div><div class="ds">${c.perk}</div>${st ? `<div class="fx">${st}</div>` : ''}</div>` + (have ? bumpH('SWAP', 'Bump to play as ' + c.name, true) : '');
+      return tileH(imgH(crewSrc(c.id), !have), !have) + `<div class="info"><div class="nm">${c.name}</div><div class="ds">${c.perk}</div>${st ? `<div class="fx">${st}</div>` : ''}</div>` + (have ? actH('SWAP', 'Tap or bump to swap', 'pick', c.id) : '');
     }
     if (o.kind === 'tube') {
       const sh = META.shelfState(save).find(q => q.items.some(it => it.id === s)), it = sh.items.find(x => x.id === s), u = UP(s);
@@ -2928,7 +2995,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
       const pp = boardPapers().find(([k]) => k === s);
       if (!pp) return '';
       const c = pp[1], daily = s === 'daily', k = Math.min(1, c.prog / c.goal);
-      const b = c.claimed ? bumpH('PAID', '', false) : c.ready ? bumpH('+' + c.reward + ' ' + NUT, 'Bump to claim', true) : bumpH(Math.min(c.prog, c.goal) + '/' + c.goal, '', false);
+      const b = c.claimed ? bumpH('PAID', '', false) : c.ready ? actH('+' + c.reward + ' ' + NUT, 'Tap or bump to claim', 'claim', s) : bumpH(Math.min(c.prog, c.goal) + '/' + c.goal, '', false);
       const sub = daily ? (c.claimed ? 'New daily contract tomorrow.' : 'Big reward. Changes every day.') : 'Counts across runs. Claim it here.';
       return tileH(`<div class="paper${daily ? ' daily' : ''}"></div>`) + `<div class="info"><div class="nm">${daily ? '<span class="tag">DAILY</span>' : ''}${META.contractText(c)}</div><div class="ds">${sub}</div><div class="bar"><i style="width:${k * 100}%"></i></div></div>` + b;
     }
@@ -2937,7 +3004,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
       const img = SPR(s === 'plater' ? 'alien_grub' : 'alien_' + s);
       const tagH = `<span class="tag" style="background:${TIER_COL[b.tier]}">${b.tier.toUpperCase()}</span>`;
       if (!st) return tileH(imgH(img, true), true) + `<div class="info"><div class="nm">${tagH}???</div><div class="ds">Not met yet. Meet it on a run to log it here (+${r} scrap).</div></div>`;
-      const bump = st === 1 ? bumpH('+' + r + ' ' + NUT, 'Bump to claim', true) : bumpH('LOGGED', '', false);
+      const bump = st === 1 ? actH('+' + r + ' ' + NUT, 'Tap or bump to claim', 'beast', s) : bumpH('LOGGED', '', false);
       return tileH(`<img src="${img}" alt=""${s === 'plater' ? ' style="filter:hue-rotate(-38deg) saturate(1.3)"' : ''}>`) + `<div class="info"><div class="nm">${tagH}${b.name}</div><div class="ds">${b.info}</div></div>` + bump;
     }
     if (o.kind === 'hatch') { const armed = HP.armT && rt - HP.armT < 4; return tileH('<div class="hatchI"></div>') + '<div class="info"><div class="nm">Launch hatch</div><div class="ds">Jump down to the alien ship and start a run.</div></div>' + (armed ? bumpH('GO!', 'Bump again to dive in', true) : bumpH('START', 'Bump to open', true)); }
@@ -2949,7 +3016,10 @@ body:has(.ov.show) #pad { visibility: hidden; }
     let html = o && o.kind === 'trophy' ? '' : cardHTML(o);
     if (!html && HL.strip) html = tileH('<div class="hatchI"></div>') + `<div class="info"><div class="nm">Ready to go?</div><div class="ds">Tap FIGHT to start a run${hubRoom === 'workshop' ? ', or bump the LAUNCH hatch.' : '.'}</div></div>`;
     if (!html) { C.style.display = 'none'; return; }
-    if (C.dataset.html !== html) { C.innerHTML = html; C.dataset.html = html; }
+    if (C.dataset.html !== html) {
+      C.innerHTML = html; C.dataset.html = html;
+      for (const b of C.querySelectorAll('[data-act]')) b.onclick = () => hubAct(b.dataset.act, b.dataset.id);
+    }
     C.classList.add('compact');
     const h = CARD_H(), y = HL.strip ? HL.cardY : HP.y >= 4 ? HUD_H + 6 : VY1 - h - 8;
     Object.assign(C.style, { display: 'flex', left: '12px', width: (SW - 24) + 'px', height: h + 'px', top: y + 'px' });
@@ -2993,7 +3063,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
   }
   window.__vs.hub = {
     get room() { return hubRoom; }, get sel() { return hubSel; }, get p() { return HP; }, get say() { return shipSay; },
-    objs: () => hubObjs(), place: (x, y) => { placeHub(x, y); updateCard(); }, step: d => hubStep(d),
+    objs: () => hubObjs(), place: (x, y) => { placeHub(x, y); updateCard(); }, step: d => hubStep(d), guide: () => hubGuide(),
     go: id => { hubRoom = id; placeHub(SPAWN[id][0], SPAWN[id][1]); renderHub(); }, launch: () => newRun(),
     // test: đứng vào ô trống cạnh đồ (near) rồi húc thật bằng hubStep (use)
     near: (kind, id) => {
@@ -3006,11 +3076,15 @@ body:has(.ov.show) #pad { visibility: hidden; }
       }
       return null;
     },
-    use: (kind, id) => { const d = window.__vs.hub.near(kind, id); if (!d) return false; HP.cd = 0; hubSlide = null; hubStep(d); if (kind === 'hatch' && hubOn()) { HP.cd = 0; hubStep(d); } return true; },
+    use: (kind, id) => {
+      const d = window.__vs.hub.near(kind, id); if (!d) return false; HP.cd = 0; hubSlide = null; say = []; showSay();
+      if (TAG_KINDS[kind]) { const b = document.querySelector('#hubCard [data-act]'); if (b) b.click(); return true; }
+      hubStep(d); if (kind === 'hatch' && hubOn()) { HP.cd = 0; hubStep(d); } return true;
+    },
   };
   $('hubLaunch').addEventListener('click', () => { audioInit(); sfx('door'); newRun(); });
   $('musicHub').addEventListener('click', musicToggle);
-  $('fightBtn').addEventListener('click', () => { audioInit(); guardBack(); sfx('door'); buzz(20); newRun(); });
+  $('fightBtn').addEventListener('click', () => { audioInit(); guardBack(); sfx('door'); buzz(20); guideDone('fight'); newRun(); });
   musicLabels();
 
   // ---------- input: D-pad 4 nút + phím ----------
@@ -3073,6 +3147,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     if (DEV && e.code === 'KeyR') { save = META.reset(); location.reload(); }
     if (DEV && e.code === 'KeyM') { save.bank += 100; META.save(save); if ($('hub').classList.contains('show')) renderHub(); }
     if (DEV && e.code === 'KeyJ') { save.dayOffset = (save.dayOffset || 0) + 1; save.visits++; META.checkUnlocks(save); META.save(save); if ($('hub').classList.contains('show')) renderHub(); }
+    if (hubOn() && (e.code === 'Enter' || e.code === 'Space')) { const b = document.querySelector('#hubCard [data-act]'); if (b && $('hubCard').style.display !== 'none') b.click(); return; }
     if (hubOn() && !KEYS[e.code]) return;
     const d = KEYS[e.code];
     if (d) { e.preventDefault(); if (!e.repeat) pressStart(d, 'key', e.code); }
@@ -3627,7 +3702,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     const shop = g.objs.find(o => o.kind === 'shop');
     if (shop && !seenHint.shop) { bubble('Step on an item to buy', VCX, topY, size); return; }
     const h = g.objs.find(o => o.kind === 'hatch' && o.open);
-    if (h) { arrow(cx(h.x), cy(h.y) - TS * 0.85, 'down', TS * 0.42); if (!seenHint.hatch) bubble('Bump the hatch to jump in!', cx(h.x), cy(h.y) - TS * 1.6, size); }
+    if (h) { arrow(cx(h.x), cy(h.y) - TS * 0.85, 'down', TS * 0.42); if (!seenHint.hatch) bubble(g.deck >= (g.lastDeck === undefined ? 2 : g.lastDeck) ? 'Bump the hatch to fly home!' : 'Bump the hatch to jump in!', cx(h.x), cy(h.y) - TS * 1.6, size); }
   }
 
   // icon minimap: theo ĐỒ CÒN LẠI trong phòng, không theo loại phòng -> lấy xong thì icon tự tắt
@@ -3681,7 +3756,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     nut(hud.scrapX, hud.scrapY, 10 * (1 + scrapBump * 0.3));
     txt(String(g.scrap), hud.scrapX + 18, hud.scrapY + 1, 22 * (1 + scrapBump * 0.15), '#efe2c4', 'left');
     const rx = SW - 14 - (document.body.classList.contains('canquit') ? 48 : 0);
-    txt('DECK ' + (g.deck + 1) + '/3', rx, top + 18, 22, '#efe2c4', 'right');
+    txt('DECK ' + (g.deck + 1) + '/' + ((g.lastDeck === undefined ? 2 : g.lastDeck) + 1), rx, top + 18, 22, '#efe2c4', 'right');
     ctx.font = `700 15px ${FONT}`; ctx.textAlign = 'right'; ctx.fillStyle = '#cbb89a'; ctx.textBaseline = 'middle';
     ctx.fillText(VS.DECKS[g.deck].name, rx, top + 42);
     minimap(SW / 2 - (5 * 17) / 2 - (document.body.classList.contains('canquit') ? 8 : 0), top + 2);
