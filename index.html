@@ -30,10 +30,13 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
 .btn { font: inherit; font-size: 24px; font-weight: 800; color: #efe2c4; background: #c8442f; border: 4px solid #2b1d16; border-radius: 18px;
   padding: 10px 34px; min-height: 60px; box-shadow: 0 6px 0 #2b1d16; cursor: pointer; }
 .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #2b1d16; }
-.stats { background: #efe2c4; border: 4px solid #2b1d16; border-radius: 18px; padding: 12px 18px; font-size: 18px; font-weight: 600;
+.stats { background-color: #efe2c4; border: 4px solid #2b1d16; border-radius: 18px; padding: 12px 22px; font-size: 18px; font-weight: 600;
   display: grid; grid-template-columns: auto auto; gap: 2px 18px; box-shadow: 0 6px 0 #2b1d16; }
-.stats b { font-weight: 800; text-align: right; }
-.tip { font-size: 18px; color: #2b1d16; background: #d9a53a; border: 3px solid #2b1d16; border-radius: 14px; padding: 8px 14px; max-width: 400px; text-align: center; font-weight: 600; }
+.stats b { font-weight: 800; display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+/* mẹo cuối ván = BOLT nói, bong bóng giống battle */
+.tip { display: flex; align-items: center; gap: 10px; font-size: 17px; color: #2b1d16; background: #efe2c4; border: 3px solid #2b1d16; border-radius: 14px; padding: 6px 14px 6px 8px;
+  max-width: 400px; text-align: left; font-weight: 700; line-height: 1.25; box-shadow: 0 4px 0 rgba(0,0,0,.35); }
+.tip img { height: 52px; flex: 0 0 auto; }
 #pad { position: fixed; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 6px; z-index: 3; touch-action: none; }
 .pb { display: flex; align-items: center; justify-content: center; background: #efe2c4; border: 4px solid #2b1d16; border-radius: 18px;
   box-shadow: 0 6px 0 #2b1d16; color: #2b1d16; font-size: 30px; line-height: 1; cursor: pointer; touch-action: none;
@@ -43,63 +46,68 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
 .pb.hint { animation: padhint .8s ease-in-out infinite; background: #f3d27a; }
 @keyframes padhint { 50% { transform: translateY(-4px) scale(1.08); } }
 .pb svg { width: 52%; height: 52%; pointer-events: none; }
-#hub { position: fixed; top: 0; display: none; flex-direction: column; background: #1e1712; z-index: 4; box-sizing: border-box; padding: 10px 12px 14px; gap: 8px; color: #efe2c4; }
-#hub.show { display: flex; animation: fadein .2s ease-out; }
-.hub-top { display: flex; align-items: center; justify-content: space-between; }
-.bank { display: flex; align-items: center; gap: 6px; font-size: 24px; font-weight: 800; }
-.nut { width: 22px; height: 22px; background: #d9a53a; clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); display: inline-block; position: relative; }
-.hub-title { font-size: 22px; font-weight: 800; letter-spacing: 1px; color: #d9a53a; }
-.hub-day { font-size: 16px; font-weight: 700; color: #cbb89a; }
-#hubShip { width: 100%; height: 150px; border-radius: 16px; border: 3px solid #5a4630; display: block; }
-.hub-news { font-size: 16px; font-weight: 700; color: #2b1d16; background: #d9a53a; border: 3px solid #2b1d16; border-radius: 12px; padding: 6px 10px; display: none; }
-.tomorrow { display: flex; align-items: center; gap: 10px; background: #2b2119; border: 3px dashed #5a4630; border-radius: 14px; padding: 6px 10px; font-size: 16px; font-weight: 700; }
-.tomorrow img { height: 44px; filter: brightness(0) opacity(.7); }
-.tomorrow b { color: #d9a53a; }
-.tabs { display: flex; gap: 6px; }
-.tab { flex: 1; font: inherit; font-size: 15px; font-weight: 800; padding: 8px 4px; min-height: 44px; border-radius: 12px; border: 3px solid #2b1d16; background: #5a4630; color: #efe2c4; position: relative; cursor: pointer; }
-.tab.on { background: #efe2c4; color: #2b1d16; }
-.tab .new { position: absolute; top: -9px; right: -4px; background: #c8442f; color: #efe2c4; font-size: 11px; padding: 1px 5px; border-radius: 8px; border: 2px solid #2b1d16; }
-.panel { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 2px; }
-.row { display: flex; align-items: center; gap: 10px; background: #efe2c4; color: #2b1d16; border: 3px solid #2b1d16; border-radius: 14px; padding: 8px 10px; }
-.row .ico { flex: 0 0 52px; height: 52px; display: flex; align-items: center; justify-content: center; }
-.row .ico img { max-width: 52px; max-height: 52px; }
-.row .info { flex: 1; min-width: 0; }
-.row .nm { font-size: 18px; font-weight: 800; line-height: 1.1; }
-.row .ds { font-size: 15px; font-weight: 500; color: #4a372a; line-height: 1.2; }
-.pips { color: #c8442f; letter-spacing: 1px; font-size: 14px; }
-.buy { font: inherit; font-size: 15px; font-weight: 800; min-width: 84px; min-height: 48px; border-radius: 12px; border: 3px solid #2b1d16; background: #d9a53a; color: #2b1d16; box-shadow: 0 4px 0 #2b1d16; cursor: pointer; }
-.buy:disabled { background: #b8a888; color: #6a5a48; box-shadow: none; }
-.buy:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #2b1d16; }
-.row.locked { background: #3a2e24; color: #a8957a; }
-.row.locked .ds { color: #8a7a62; }
-.row.locked img { filter: brightness(0) opacity(.6); }
-.bar { height: 10px; background: #b8a888; border-radius: 6px; border: 2px solid #2b1d16; overflow: hidden; margin-top: 4px; }
+#hub { position: fixed; top: 0; display: none; z-index: 4; pointer-events: none; color: #2b1d16; }
+#hub.show { display: block; animation: fadein .2s ease-out; }
+#hub > * { position: absolute; box-sizing: border-box; pointer-events: auto; margin: 0; }
+body.hubmode #pad { display: none; }
+/* màn kết / vá khẩn cấp: ẩn D-pad cho khỏi lộ sau nút */
+body:has(.ov.show) #pad { visibility: hidden; }
+/* nút dùng chung = đúng nút D-pad của battle */
+.key { font: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; background: #efe2c4; border: 4px solid #2b1d16; border-radius: 16px;
+  box-shadow: 0 6px 0 #2b1d16; font-weight: 800; color: #2b1d16; line-height: 1; cursor: pointer; padding: 0 8px; position: relative; box-sizing: border-box; }
+.key:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 #2b1d16; }
+.key.mus { background: #d9a53a; }
+.key.red { background: #c8442f; color: #efe2c4; }
+.key.off { background: #9a8a70; color: #4a3a2a; box-shadow: 0 3px 0 #2b1d16; cursor: default; }
+.key.nav { flex-direction: column; gap: 0; }
+.key.nav svg { width: 26px; height: 26px; }
+.key.nav span { font-size: 12px; letter-spacing: .5px; }
+.key.nav.off svg path { fill: #5a4a3a; }
+.key .new { position: absolute; top: -11px; right: -6px; background: #c8442f; color: #efe2c4; font-size: 11px; padding: 0 6px; border-radius: 8px; border: 2.5px solid #2b1d16; line-height: 1.5; letter-spacing: 0; }
+.big { font-weight: 800; color: #efe2c4; -webkit-text-stroke: 5px #2b1d16; paint-order: stroke fill; letter-spacing: 1px; }
+#hubLaunch .big { font-size: 28px; }
+/* đinh tán 4 góc như khung phòng */
+.riv { background-image:
+  radial-gradient(circle at 9px 9px, rgba(43,29,22,.42) 2.3px, transparent 3px),
+  radial-gradient(circle at calc(100% - 9px) 9px, rgba(43,29,22,.42) 2.3px, transparent 3px),
+  radial-gradient(circle at 9px calc(100% - 9px), rgba(43,29,22,.42) 2.3px, transparent 3px),
+  radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), rgba(43,29,22,.42) 2.3px, transparent 3px); }
+.card2 { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background-color: #efe2c4; border: 3px solid #2b1d16; border-radius: 14px; }
+.card2 .info { flex: 1; min-width: 0; max-height: 100%; overflow: hidden; }
+.card2 .ds { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.card2 .nm { font-size: 19px; font-weight: 800; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card2 .nm.one { display: block; white-space: nowrap; text-overflow: ellipsis; }
+.card2 .ds { font-size: 14px; font-weight: 600; color: #4a372a; line-height: 1.2; margin-top: 2px; }
+.card2 .fx { font-size: 14px; font-weight: 600; color: #2b1d16; margin-top: 3px; }
+.card2 .cta { flex: 0 0 auto; min-width: 84px; height: 54px; font-size: 19px; }
+.card2 .cta small { font-size: 12px; margin-right: 2px; }
+.tile { flex: 0 0 66px; width: 66px; height: 66px; border: 2.5px solid #2b1d16; border-radius: 10px; background-color: #857e64; box-sizing: border-box; overflow: hidden;
+  box-shadow: inset 3px 3px 0 rgba(255,245,220,.16), inset -3px -3px 0 rgba(43,29,22,.18); display: flex; align-items: center; justify-content: center; }
+.tile.dark { background-color: #3a2e24; }
+.tile img { max-width: 54px; max-height: 54px; }
+.tile img.sil { filter: brightness(0) opacity(.75); }
+.tile .paper { width: 36px; height: 44px; background: repeating-linear-gradient(#efe2c4 0 9px, #b8a888 9px 11px); border: 2.5px solid #2b1d16; border-radius: 3px; transform: rotate(-4deg); }
+.tile .paper.daily { background: repeating-linear-gradient(#e2b851 0 9px, #b5852a 9px 11px); }
+.pp { display: inline-block; width: 11px; height: 9px; border: 2px solid #2b1d16; border-radius: 3px; background: #7a6a55; margin-left: 3px; vertical-align: 2px; }
+.pp.on { background: #d9a53a; }
+.nutI { width: 18px; height: 18px; flex: 0 0 auto; vertical-align: -3px; }
+.bar { height: 10px; background: #b8a888; border-radius: 6px; border: 2px solid #2b1d16; overflow: hidden; margin-top: 5px; }
 .bar i { display: block; height: 100%; background: #6e7b4a; }
-.shelf { background: #2b2119; border: 3px solid #5a4630; border-radius: 14px; padding: 8px; }
-.shelf h3 { margin: 0 0 6px; font-size: 16px; color: #d9a53a; }
-.shelf .tubes { display: flex; gap: 6px; flex-wrap: wrap; }
-.tubei { width: 52px; height: 70px; border: 3px solid #2b1d16; border-radius: 22px 22px 10px 10px; background: rgba(207,227,214,.18); display: flex; align-items: center; justify-content: center; position: relative; }
-.tubei img { max-width: 40px; max-height: 40px; }
-.tubei.unseen img { filter: brightness(0) opacity(.55); }
-.tubei.lockd { background: #3a2e24; }
-.tubei .lk { font-size: 20px; color: #8a7a62; }
-.tubei.excl { border-color: #d9a53a; box-shadow: 0 0 0 2px #d9a53a inset; }
-.tubei.excl.lockd .lk { color: #d9a53a; }
-.shelf .hint { font-size: 13px; color: #cbb89a; margin-top: 6px; }
-.launch { width: 100%; font-size: 26px; min-height: 62px; }
+.tag { display: inline-block; font-size: 11px; font-weight: 800; background: #d9a53a; color: #2b1d16; border: 2px solid #2b1d16; border-radius: 6px; padding: 0 5px; margin-right: 5px; vertical-align: 2px; line-height: 1.4; }
+#hubNews { display: none; align-items: center; gap: 10px; background: #efe2c4; border: 3px solid #2b1d16; border-radius: 14px; padding: 8px 12px 8px 8px; font-size: 16px; font-weight: 700; line-height: 1.25;
+  box-shadow: 0 4px 0 rgba(0,0,0,.35); cursor: pointer; }
+#hubNews img { height: 64px; flex: 0 0 auto; }
+#hubNews .say { flex: 1; }
+#hubNews small { display: block; font-size: 12px; opacity: .65; margin-top: 3px; }
+#hubTomorrow { display: flex; align-items: center; gap: 8px; overflow: hidden; padding: 0 12px 0 0; background-color: #5d5846; border: 3px solid #2b1d16; border-radius: 12px; color: #efe2c4;
+  font-size: 15px; font-weight: 800; text-shadow: 0 2px 0 #2b1d16; white-space: nowrap; box-shadow: inset 0 3px 0 rgba(255,245,220,.14), inset 0 -4px 0 rgba(43,29,22,.3); }
+#hubTomorrow .hzs { align-self: stretch; flex: 0 0 16px; background: repeating-linear-gradient(-45deg, #d9a53a 0 6px, #2b1d16 6px 11px); }
+#hubTomorrow img { height: 28px; filter: brightness(0) opacity(.75); }
+#hubTomorrow b { color: #d9a53a; }
+#hubTomorrow div { overflow: hidden; text-overflow: ellipsis; }
 .btn2 { font: inherit; font-size: 18px; font-weight: 700; color: #efe2c4; background: none; border: none; text-decoration: underline; min-height: 48px; cursor: pointer; }
 .adbox { display: none; width: min(320px, 90%); aspect-ratio: 16 / 10; background: #0e0a08; border: 4px dashed #5a4630; border-radius: 16px; color: #cbb89a; font-size: 18px; font-weight: 700; align-items: center; justify-content: center; flex-direction: column; gap: 6px; text-align: center; }
 .adbox b { font-size: 40px; color: #efe2c4; }
-.hub-news { display: none; align-items: center; gap: 10px; }
-.hub-news img { height: 48px; flex: 0 0 auto; }
-.hub-news .say { flex: 1; }
-.hub-news .more { font-size: 12px; opacity: .7; }
-.tubei { cursor: pointer; }
-.tubei.sel { outline: 3px solid #d9a53a; outline-offset: 2px; }
-.labinfo { font-size: 14px; color: #efe2c4; background: #3a2e24; border-radius: 10px; padding: 6px 8px; margin-top: 6px; }
-.labinfo b { color: #d9a53a; }
-.row.daily { border-color: #d9a53a; box-shadow: 0 0 0 2px #d9a53a inset; }
-.tag { display: inline-block; font-size: 11px; font-weight: 800; background: #d9a53a; color: #2b1d16; border-radius: 6px; padding: 0 5px; margin-right: 4px; vertical-align: middle; }
 .goal { grid-column: 1 / -1; margin-top: 4px; padding-top: 6px; border-top: 2px dashed #b8a888; text-align: center; font-weight: 800; }
 #build { position: fixed; right: 6px; bottom: 4px; font-size: 11px; color: rgba(43,29,22,.45); z-index: 2; pointer-events: none; }
 </style>
@@ -107,10 +115,10 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
 <body>
 <canvas id="c"></canvas>
 <div id="pad"><div class="pb" data-d="up"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(0 5 5)"/></svg></div><div class="pb" data-d="left"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(-90 5 5)"/></svg></div><div class="pb" data-d="right"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(90 5 5)"/></svg></div><div class="pb" data-d="down"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(180 5 5)"/></svg></div></div>
-<div id="hub"><div class="hub-top"><div class="bank"><span class="nut"></span><b id="hubBank">0</b></div><div class="hub-title">RESCUE SHIP</div><div class="hub-day" id="hubDay">Day 1</div></div><canvas id="hubShip"></canvas><div class="hub-news" id="hubNews"></div><div class="tomorrow" id="hubTomorrow"></div><div class="tabs" id="hubTabs"></div><div class="panel" id="hubPanel"></div><button class="btn launch" id="hubLaunch">LAUNCH</button></div>
+<div id="hub"><div class="card2 riv" id="hubCard"></div><div id="hubNews"></div><button class="key nav" id="hubPrev"></button><button class="key red" id="hubLaunch"><span class="big">LAUNCH</span></button><button class="key nav" id="hubNext"></button><div id="hubTomorrow"></div></div>
 <div id="patch" class="ov"><h1>EMERGENCY<br>PATCH</h1><div class="sub">Tape the suit and get back up with 3 HP.<br>Once per run.</div><div class="adbox" id="adBox"></div><button class="btn" id="patchAd">&#9654; Watch ad</button><button class="btn2" id="patchNo">No thanks</button></div>
-<div id="end" class="ov"><h1 id="endT">SHIP CLEARED!</h1><div class="sub" id="endS"></div><div class="stats" id="endStats"></div><div class="tip" id="endTip"></div><div class="stats" id="endMeta" style="display:none"></div><button class="btn" id="again">Play again</button></div>
-<div id="build">voidstep toy-8</div>
+<div id="end" class="ov"><h1 id="endT">SHIP CLEARED!</h1><div class="sub" id="endS"></div><div class="stats riv" id="endStats"></div><div class="tip"><img id="endBolt" alt=""><span id="endTip"></span></div><div class="stats riv" id="endMeta" style="display:none"></div><button class="btn" id="again">Play again</button></div>
+<div id="build">voidstep toy-9</div>
 <script>
 // VOIDSTEP — luật game thuần (không đụng DOM). main.js và test dùng chung file này.
 // Cấu trúc: 3 deck, mỗi deck là mê cung phòng (bản đồ 5x5). Phòng 7x9 ô, cửa ở giữa 4 cạnh.
@@ -1691,6 +1699,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     PAD = Math.round(TS * 0.38); BW = TS * VS.W; BH = TS * VS.H;
     roomCache.clear();
     buildBg();
+    layoutHub();
   }
   function prng(seed) { let s = seed; return () => { s = (s * 16807) % 2147483647; return s / 2147483647; }; }
   function rr(c, x, y, w, h, r) { c.beginPath(); ART.rrect(x, y, w, h, r)(c); }
@@ -1794,7 +1803,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     const rm = META.runMeta(save);
     ART.setHero(rm.crew);
     g = VS.create((Q.get('seed') | 0) || ((Date.now() % 1000000) | 0), rm);
-    $('hub').classList.remove('show');
+    $('hub').classList.remove('show'); document.body.classList.remove('hubmode');
     parts = []; floats = []; strikes = []; zaps = []; coins = []; shots = []; banner = null; tipBanner = null; trans = null; endTimer = -1; press = null;
     camX = null; roomCache.clear();
     $('end').classList.remove('show');
@@ -2034,7 +2043,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     g.ended = true;
     lastResult = META.endRun(save, g, win);
     const r = lastResult;
-    const lines = [['Scrap kept', '+' + r.kept + ' (' + Math.round(r.keep * 100) + '%)']];
+    const lines = [['Scrap kept', '+' + r.kept + ' ' + NUT + ' (' + Math.round(r.keep * 100) + '%)']];
     for (const c of r.rescued) lines.push(['Rescued', META.CREW.find(x => x.id === c).name]);
     if (r.newSeen.length) lines.push(['New in the Lab', r.newSeen.length + ' buff' + (r.newSeen.length > 1 ? 's' : '')]);
     if (r.done.length) lines.push(['Contracts done', r.done.length]);
@@ -2050,6 +2059,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     const t = Math.round(s.time);
     $('endStats').innerHTML = [['Time', Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0')], ['Rooms explored', s.rooms], ['Aliens down', s.kills],
       ['Vented', s.vented], ['Parries', s.parries], ['Scrap found', s.scrap], ['Buffs', s.buffs]].map(([a, b]) => `<span>${a}</span><b>${b}</b>`).join('');
+    $('endBolt').src = SPR('obj_vendor');
     $('endTip').textContent = win ? 'Try a different route and buff mix next run.' : (LOSE_TIPS[g.lostTo] || LOSE_TIPS.alien);
     $('end').classList.add('show');
   }
@@ -2076,234 +2086,515 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
   $('patchAd').addEventListener('click', () => { audioInit(); patchAd(); });
   $('patchNo').addEventListener('click', patchNo);
 
-  // ---------- tàu cứu hộ (sảnh meta) ----------
+  // ---------- tàu cứu hộ (sảnh meta) — hướng B: mỗi khu là 1 phòng vẽ y như phòng battle, chạm đồ vật để xem/mua ----------
   const SPR = n => (window.VS_SPRITES || {})[n] || '';
   const crewSrc = id => SPR(id === 'janitor' ? 'hero_janitor' : 'crew_' + id);
-  let hubTab = 'workshop', labSel = null;
-  const seenTabs = {};
-  let say = [], shipSay = null, shipHits = [], shipFx = {};
-  const TAB_OF = { workshop: 'workshop', board: 'contracts', lab: 'lab', bunks: 'crew' };
+  const HEXP = [0, 1, 2, 3, 4, 5].map(k => (Math.cos(k * Math.PI / 3) * 9.5).toFixed(2) + ',' + (Math.sin(k * Math.PI / 3) * 9.5).toFixed(2)).join(' ');
+  const NUT = `<svg class="nutI" viewBox="-12 -12 24 24"><polygon points="${HEXP}" fill="#d9a53a" stroke="#2b1d16" stroke-width="2.6" stroke-linejoin="round"/><circle r="3.6" fill="#7a5a20"/></svg>`;
+  const LOCK = '<svg viewBox="0 0 40 48" style="width:30px"><path d="M10 22V15a10 10 0 0 1 20 0v7" fill="none" stroke="#2b1d16" stroke-width="8"/><path d="M10 22V15a10 10 0 0 1 20 0v7" fill="none" stroke="#a9a59a" stroke-width="4"/><rect x="4" y="21" width="32" height="23" rx="5" fill="#d9a53a" stroke="#2b1d16" stroke-width="3"/><circle cx="20" cy="31" r="3.5" fill="#2b1d16"/><rect x="18.5" y="32" width="3" height="7" fill="#2b1d16"/></svg>';
+  const TRI = r => `<svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(${r} 5 5)"/></svg>`;
+  // thứ tự phòng từ trái sang phải; unl = cờ mở khoá trong save
+  const ROOMS = [
+    { id: 'crew', unl: 'crew', mod: 'bunks', name: 'Crew', title: 'CREW BUNKS', ic: '✚' },
+    { id: 'workshop', unl: 'workshop', mod: 'workshop', name: 'Workshop', title: 'WORKSHOP', ic: '⚙' },
+    { id: 'lab', unl: 'lab', mod: 'lab', name: 'Lab', title: 'SPECIMEN LAB', ic: '★' },
+    { id: 'board', unl: 'contracts', mod: 'board', name: 'Board', title: 'CONTRACTS', ic: '■' },
+  ];
+  const ROOM_OF = { workshop: 'workshop', board: 'board', lab: 'lab', bunks: 'crew' };
+  // máy nâng cấp trong xưởng: ô (cột, hàng) + hình; Extra Stock = nâng cấp chính BOLT (robot máy bán hàng)
+  const WS_AT = { hull: [1, 1], feed: [3, 1], scanner: [5, 1], kit: [1, 4], breaker: [5, 4], stock: [3, 6] };
+  const WS_ICO = { hull: 'item_suit', feed: 'item_trigger', scanner: 'item_magnet', kit: 'obj_chest', breaker: 'item_heavy', stock: 'obj_vendor' };
+  // dòng "hiện tại → cấp sau" trên thẻ máy (số lấy theo luật trong rules.js / meta.js)
+  const WS_FX = {
+    hull: ['Max HP', l => 5 + l],
+    feed: ['Charge', l => (CHARGE_T * (1 - 0.15 * l)).toFixed(2) + 's'],
+    scanner: ['Kept when eaten', l => Math.round(Math.min(1, META.CONFIG.keepOnLoss + 0.15 * l) * 100) + '%'],
+    kit: ['Starter buffs', l => l],
+    breaker: ['Door hits', l => 3 - l],
+    stock: ['Vending buffs', l => 2 + l],
+  };
+  const CREW_COL = { janitor: '#c97a3c', welder: '#6e7b4a', medic: '#b04a6a', rigger: '#4f7fa0' };
+  const EXTRA_LINES = { trophy: ["The Brood Queen's crown. Still a bit sticky."] };
+  let hubRoom = 'workshop', hubSlide = null;
+  const hubSel = {}, seenRooms = {}, newRooms = new Set();
+  let say = [], shipSay = null, shipHits = [], shipFx = {}, hubParts = [], hubFloats = [], bankBump = 0;
+  const HL = { TS: 48, PAD: 18, ext: 14, x: 0, y: 0 };
+  const hubRoomCache = new Map();
+  const hubOn = () => $('hub').classList.contains('show');
+  const roomsOpen = () => ROOMS.filter(r => save.unl[r.unl]);
+  const imgOf = n => n === 'obj_vendor' ? ART.img.vendor : n === 'obj_chest' ? ART.img.chest : ART.img[n];
+  const crewImg = id => ART.img[id === 'janitor' ? 'crew_janitor' : 'crew_' + id];
+  const okImg = im => im && im.complete !== false && im.naturalWidth;
+  const pickId = () => save.crew[save.pick] ? save.pick : 'janitor';
+
+  // bóng đen (buff chưa tìm thấy / đồng đội chưa cứu) + ổ khoá (ống chưa mở): đưa vào DRAW.tube như ảnh item
+  const silC = {};
+  function sil(key, im) {
+    if (silC[key]) return silC[key];
+    if (!okImg(im)) return null;
+    const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
+    const x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = 'rgba(27,20,16,0.88)'; x.fillRect(0, 0, c.width, c.height);
+    c.naturalWidth = c.width; c.naturalHeight = c.height; c.complete = true;
+    return (silC[key] = c);
+  }
+  let lockC = null;
+  function lockImg() {
+    if (lockC) return lockC;
+    const c = document.createElement('canvas'); c.width = 80; c.height = 96; const x = c.getContext('2d');
+    x.lineCap = 'round'; x.beginPath(); x.arc(40, 40, 20, Math.PI, 0); x.lineTo(60, 52); x.moveTo(20, 40); x.lineTo(20, 52);
+    x.strokeStyle = INK; x.lineWidth = 16; x.stroke(); x.strokeStyle = '#a9a59a'; x.lineWidth = 8; x.stroke();
+    x.beginPath(); ART.rrect(8, 46, 64, 44, 10)(x); x.fillStyle = '#d9a53a'; x.fill(); x.lineWidth = 6; x.strokeStyle = INK; x.stroke();
+    x.beginPath(); x.arc(40, 64, 7, 0, 7); x.fillStyle = INK; x.fill(); x.fillRect(37, 66, 6, 14);
+    c.naturalWidth = 80; c.naturalHeight = 96; c.complete = true;
+    return (lockC = c);
+  }
+
+  // ----- bố cục: HUD trên như battle · phòng 7×7 ô · dải dưới (thẻ chi tiết, 3 nút, Tomorrow) đúng chỗ D-pad lúc chơi -----
+  function layoutHub() {
+    const short = SH < 760;
+    const cardH = short ? 104 : 122, keyH = short ? 56 : 64;
+    const tomY = SH - 12 - 38, keyY = tomY - 16 - keyH - 6, cardY = keyY - 14 - cardH;
+    HL.zoneY = cardY - 14;
+    const top = HUD_H + 8, bot = HL.zoneY - 8;
+    const TS = Math.max(28, Math.floor(Math.min((SW - 12) / 7.76, (bot - top) / 7.76)));
+    HL.TS = TS; HL.PAD = Math.round(TS * 0.38); HL.ext = HL.PAD * 0.8;
+    HL.x = Math.round((SW - 7 * TS) / 2); HL.y = Math.round(top + (bot - top - 7 * TS) / 2);
+    hubRoomCache.clear();
+    const px = v => Math.round(v) + 'px';
+    const box = (id, l, t, w, h) => Object.assign($(id).style, { left: px(l), top: px(t), width: px(w), height: px(h) });
+    box('hubCard', 12, cardY, SW - 24, cardH); box('hubNews', 12, cardY, SW - 24, cardH);
+    const kw = Math.round((SW - 48) * 0.27);
+    box('hubPrev', 12, keyY, kw, keyH); box('hubLaunch', 24 + kw, keyY, SW - 48 - kw * 2, keyH); box('hubNext', SW - 12 - kw, keyY, kw, keyH);
+    box('hubTomorrow', 12, tomY, SW - 24, 38);
+  }
+
+  // sàn + khung của 1 phòng tàu: cùng công thức roomCanvas của battle (deck 1)
+  function hubRoomCanvas(id) {
+    const key = id + ':' + HL.TS;
+    if (hubRoomCache.has(key)) return hubRoomCache.get(key);
+    const TS = HL.TS, P = HL.PAD, ext = HL.ext, cd = Math.min(DPR, 2), side = 7 * TS + P * 2;
+    const c = document.createElement('canvas'); c.width = Math.round(side * cd); c.height = c.width;
+    const b = c.getContext('2d'); b.setTransform(cd, 0, 0, cd, P * cd, P * cd);
+    const lw = Math.max(2, TS * 0.06), r = prng({ crew: 13, workshop: 31, lab: 23, board: 41 }[id] || 5), BWh = 7 * TS;
+    rr(b, -ext, -ext, BWh + ext * 2, BWh + ext * 2, TS * 0.32); b.fillStyle = '#5d5846'; b.fill(); b.lineWidth = lw * 1.3; b.strokeStyle = INK; b.stroke();
+    for (let i = 0; i <= 7; i++) for (const yy of [-P * 0.4, BWh + P * 0.4]) ART.dot(b, i * TS, yy, TS * 0.04, '#3e3a2e');
+    for (let j = 1; j < 7; j++) if (j !== 3 && j !== 4) for (const xx of [-P * 0.4, BWh + P * 0.4]) ART.dot(b, xx, j * TS, TS * 0.04, '#3e3a2e');
+    for (let y = 0; y < 7; y++) for (let x = 0; x < 7; x++) {
+      const X = x * TS, Y = y * TS;
+      b.fillStyle = (x + y) % 2 ? '#857e64' : '#7d765d'; b.fillRect(X, Y, TS, TS);
+      b.fillStyle = 'rgba(255,245,220,0.16)'; b.fillRect(X, Y, TS, TS * 0.07); b.fillRect(X, Y, TS * 0.07, TS);
+      b.fillStyle = 'rgba(43,29,22,0.16)'; b.fillRect(X, Y + TS * 0.93, TS, TS * 0.07); b.fillRect(X + TS * 0.93, Y, TS * 0.07, TS);
+      for (const [dx, dy] of [[0.15, 0.15], [0.85, 0.15], [0.15, 0.85], [0.85, 0.85]]) ART.dot(b, X + TS * dx, Y + TS * dy, TS * 0.028, 'rgba(43,29,22,0.35)');
+      if (r() < 0.35) { b.beginPath(); b.ellipse(X + TS * (0.3 + r() * 0.4), Y + TS * (0.3 + r() * 0.4), TS * (0.08 + r() * 0.12), TS * (0.05 + r() * 0.08), r() * 3, 0, 7); b.fillStyle = 'rgba(70,50,30,0.13)'; b.fill(); }
+    }
+    b.strokeStyle = 'rgba(43,29,22,0.4)'; b.lineWidth = Math.max(1, lw * 0.4);
+    for (let i = 1; i < 7; i++) { b.beginPath(); b.moveTo(i * TS, 0); b.lineTo(i * TS, BWh); b.stroke(); b.beginPath(); b.moveTo(0, i * TS); b.lineTo(BWh, i * TS); b.stroke(); }
+    b.lineWidth = lw; b.strokeStyle = INK; b.strokeRect(0, 0, BWh, BWh);
+    hubRoomCache.set(key, c);
+    return c;
+  }
+
+  // ----- vẽ đồ trong phòng (gọi mỗi khung, ghi vùng chạm vào shipHits) -----
+  const hx = u => HL.x + u * HL.TS, hy = v => HL.y + v * HL.TS;
+  function crateAt(X, Y, T, lw) {
+    const m = T * 0.06, w = T - m * 2;
+    ART.setLW(lw);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(X + m + T * 0.05, Y + m + T * 0.06, w, w);
+    ART.blob(ctx, ART.rrect(X + m, Y + m, w, w, T * 0.05), '#6d7778', '#545d5e', T);
+    ART.blob(ctx, ART.rrect(X + m, Y + m, w, T * 0.18, T * 0.04), '#86908f', null, T, lw * 0.8);
+    for (const yy of [0.42, 0.72]) { ctx.fillStyle = '#4a5253'; ctx.fillRect(X + m, Y + T * yy, w, T * 0.07); }
+    for (const [dx, dy] of [[0.18, 0.3], [0.82, 0.3], [0.18, 0.86], [0.82, 0.86]]) ART.dot(ctx, X + T * dx, Y + T * dy, T * 0.035, '#2b2f30');
+  }
+  function fitImg(im, x, y, box, k) {
+    if (!okImg(im)) return;
+    const s = Math.min(box / im.naturalWidth, box / im.naturalHeight) * (k || 1), w = im.naturalWidth * s, h = im.naturalHeight * s;
+    ctx.drawImage(im, x - w / 2, y - h / 2, w, h);
+  }
+  function footImg(im, x, foot, h, alpha) {
+    if (!okImg(im)) return;
+    const w = h * im.naturalWidth / im.naturalHeight;
+    ctx.globalAlpha = alpha === undefined ? 1 : alpha; ctx.drawImage(im, x - w / 2, foot - h, w, h); ctx.globalAlpha = 1;
+  }
+  function floorShadow(x, y, rx) { ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(x, y, rx, rx * 0.32, 0, 0, 7); ctx.fill(); }
+  function selRing(x, y, w, h) {
+    const p = 0.5 + 0.5 * Math.sin(rt * 6);
+    rr(ctx, x - 3, y - 3, w + 6, h + 6, 10); ctx.lineWidth = 7; ctx.strokeStyle = INK; ctx.stroke();
+    ctx.lineWidth = 3.5; ctx.strokeStyle = `rgba(243,210,122,${0.6 + 0.4 * p})`; ctx.stroke();
+  }
+  function tag(text, x, y, size, bg, fg) {
+    ctx.font = `800 ${Math.round(size)}px ${FONT}`;
+    const w = ctx.measureText(text).width + size * 1.1, h = size * 1.6;
+    rr(ctx, x - w / 2, y - h / 2, w, h, h * 0.4); ctx.fillStyle = bg || 'rgba(30,23,18,0.88)'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = INK; ctx.stroke();
+    ctx.fillStyle = fg || '#efe2c4'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y + size * 0.05);
+  }
+  function hubDoor(side, isNew) {
+    const TS = HL.TS, P = HL.PAD, X = side < 0 ? HL.x - P * 0.4 : HL.x + 7 * TS + P * 0.4, Y = hy(3.5), w = P * 1.05, h = TS * 0.94;
+    rr(ctx, X - w / 2, Y - h / 2, w, h, TS * 0.06); ctx.fillStyle = '#8a8370'; ctx.fill();
+    ctx.save(); ctx.clip(); ctx.strokeStyle = 'rgba(43,29,22,0.5)'; ctx.lineWidth = 2;
+    for (let k = -1; k <= 1; k++) { ctx.beginPath(); ctx.moveTo(X + k * w * 0.25, Y - h / 2); ctx.lineTo(X + k * w * 0.25, Y + h / 2); ctx.stroke(); }
+    ctx.restore();
+    rr(ctx, X - w / 2, Y - h / 2, w, h, TS * 0.06); ctx.lineWidth = Math.max(2, TS * 0.05); ctx.strokeStyle = INK; ctx.stroke();
+    ctx.beginPath(); ctx.arc(X, Y - h * 0.6, Math.max(3, TS * 0.06), 0, 7); ctx.fillStyle = '#b9d66a'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = INK; ctx.stroke();
+    arrow(X - side * TS * 0.5, Y, side < 0 ? 'left' : 'right', TS * 0.32);
+    if (isNew) tag('NEW', X - side * TS * 0.45, Y - TS * 0.62, 11, '#c8442f');
+    shipHits.push({ kind: 'door', dir: side, x: X - (side < 0 ? w : TS * 0.85), y: Y - h * 0.6, w: w + TS * 0.85, h: h * 1.2 });
+  }
+  function avatarAt(u, footV) {
+    const id = pickId(), TS = HL.TS, x = hx(u), foot = hy(footV) - 4, h = TS * 1.35;
+    floorShadow(x, foot - 2, TS * 0.4);
+    footImg(crewImg(id), x, foot + Math.sin(rt * 3) * 1.2, h);
+    shipHits.push({ kind: 'talk', who: id, x: x - h * 0.32, y: foot - h, w: h * 0.64, h });
+  }
+
+  function drawWorkshop() {
+    const TS = HL.TS, lw = Math.max(2, TS * 0.06), sel = hubSel.workshop;
+    if (save.wins >= 1) {
+      // vương miện Alien Chúa trên kệ (thắng ít nhất 1 lần)
+      const X = hx(0), Y = hy(6);
+      crateAt(X, Y, TS, lw);
+      ctx.save(); ctx.translate(X + TS / 2, Y + TS * 0.15); const s = TS * 0.3;
+      ctx.beginPath(); ctx.moveTo(-s, 0); ctx.lineTo(-s, -s * 0.9); ctx.lineTo(-s * 0.5, -s * 0.4); ctx.lineTo(0, -s * 1.1); ctx.lineTo(s * 0.5, -s * 0.4); ctx.lineTo(s, -s * 0.9); ctx.lineTo(s, 0); ctx.closePath();
+      ctx.fillStyle = '#cf9f44'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = INK; ctx.stroke(); ctx.restore();
+      shipHits.push({ kind: 'talk', who: 'trophy', x: X, y: Y - TS * 0.3, w: TS, h: TS * 1.3 });
+    }
+    for (const w of META.WORKSHOP) {
+      const [i, j] = WS_AT[w.id], X = hx(i), Y = hy(j), l = META.lvl(save, w.id), max = l >= w.max, cost = META.CONFIG.workshopCost[l];
+      crateAt(X, Y, TS, lw);
+      for (let k = 0; k < w.max; k++) {
+        ctx.beginPath(); ctx.arc(X + TS * (0.5 + (k - (w.max - 1) / 2) * 0.2), Y + TS * 0.33, TS * 0.06, 0, 7);
+        ctx.fillStyle = k < l ? '#f1d36a' : '#2b2f30'; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = INK; ctx.stroke();
+      }
+      const can = !max && save.bank >= cost;
+      rr(ctx, X + TS * 0.12, Y + TS * 0.5, TS * 0.76, TS * 0.32, 5); ctx.fillStyle = max ? '#b9d66a' : can ? '#efe2c4' : '#b8a888'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = INK; ctx.stroke();
+      ctx.font = `800 ${Math.round(Math.max(10, TS * 0.26))}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = can || max ? INK : '#6a5a48';
+      if (max) ctx.fillText('MAX', X + TS / 2, Y + TS * 0.67);
+      else { nut(X + TS * 0.3, Y + TS * 0.66, TS * 0.11); ctx.fillText(String(cost), X + TS * 0.62, Y + TS * 0.67); }
+      const pop = shipFx.buy && shipFx.buy.id === w.id ? Math.max(0, 1 - (rt - shipFx.buy.t) / 0.45) : 0;
+      if (w.id !== 'stock') fitImg(imgOf(WS_ICO[w.id]), X + TS / 2, Y - TS * 0.08 - pop * TS * 0.15, TS * 0.78, 1 + pop * 0.35);
+      shipHits.push({ kind: 'ws', id: w.id, x: X, y: Y - TS * 0.45, w: TS, h: TS * 1.45 });
+      if (sel === w.id) { selRing(X + 1, Y - TS * 0.45, TS - 2, TS * 1.43); if (w.id !== 'stock') arrow(X + TS / 2, Y - TS * 0.8, 'down', TS * 0.42); }
+    }
+    // BOLT đứng trên bệ Extra Stock
+    const bx = hx(3.5), bf = hy(6) + TS * 0.18;
+    floorShadow(bx, bf - 2, TS * 0.38);
+    ctx.save(); ctx.translate(bx, bf); ART.draw(ctx, 'vendor', TS * 1.2, { t: rt }); ctx.restore();
+    shipHits.push({ kind: 'ws', id: 'stock', who: 'bolt', x: bx - TS * 0.4, y: bf - TS * 1.35, w: TS * 0.8, h: TS * 1.35 });
+    if (sel === 'stock') arrow(bx, bf - TS * 1.55, 'down', TS * 0.42);
+    avatarAt(4.5, 3);
+  }
+
+  // 2 hàng × 2 giường tầng; mỗi người đứng trước giường của mình
+  const CREW_SLOT = [[1.9, 0], [5.1, 0], [1.9, 3.5], [5.1, 3.5]];
+  function drawCrew() {
+    const TS = HL.TS, di = META.dayIndex(save);
+    META.CREW.forEach((cc, k) => {
+      const [u, v0] = CREW_SLOT[k % 4], x = hx(u), have = !!save.crew[cc.id], picked = pickId() === cc.id;
+      // giường tầng nhìn từ trên xuống
+      ART.setLW(Math.max(2, TS * 0.05));
+      ART.blob(ctx, ART.rrect(x - TS * 0.44, hy(v0 + 0.12), TS * 0.88, TS * 1.62, TS * 0.1), '#6d7778', '#545d5e', TS);
+      ART.blob(ctx, ART.rrect(x - TS * 0.36, hy(v0 + 0.5), TS * 0.72, TS * 1.12, TS * 0.08), have ? CREW_COL[cc.id] : '#5a4e40', null, TS, Math.max(1.5, TS * 0.04));
+      ART.blob(ctx, ART.rrect(x - TS * 0.3, hy(v0 + 0.2), TS * 0.6, TS * 0.26, TS * 0.08), have ? '#efe2c4' : '#8a7a62', null, TS, Math.max(1.5, TS * 0.04));
+      const foot = hy(v0 + 2.95), h = TS * (picked ? 1.5 : 1.3);
+      if (picked) {
+        ctx.fillStyle = 'rgba(241,211,106,0.16)'; ctx.beginPath(); ctx.moveTo(x - 8, hy(v0)); ctx.lineTo(x + 8, hy(v0)); ctx.lineTo(x + TS * 0.7, foot); ctx.lineTo(x - TS * 0.7, foot); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(x, foot - 2, TS * 0.5, TS * 0.16, 0, 0, 7); ctx.strokeStyle = '#f1d36a'; ctx.lineWidth = 3; ctx.stroke();
+      }
+      floorShadow(x, foot - 2, TS * 0.38);
+      const im = crewImg(cc.id);
+      footImg(have ? im : sil('c_' + cc.id, im), x, foot + (have ? Math.sin(rt * 3 + k) * 1.2 : 0), h, have ? 1 : 0.85);
+      tag(have ? cc.name.toUpperCase() : (cc.day > di ? 'DAY ' + (cc.day + 1) : 'DECK ' + (cc.deck + 1) + ' POD'), x, foot + TS * 0.28, Math.max(10, TS * 0.22));
+      shipHits.push({ kind: 'crew', id: cc.id, who: have ? cc.id : null, x: x - TS * 0.6, y: hy(v0 + 0.1), w: TS * 1.2, h: foot - hy(v0 + 0.1) + TS * 0.48 });
+      if (hubSel.crew === cc.id) selRing(x - TS * 0.62, hy(v0 + 0.06), TS * 1.24, foot - hy(v0 + 0.06) + TS * 0.5);
+    });
+  }
+
+  function drawLab() {
+    const TS = HL.TS;
+    META.shelfState(save).forEach((sh, si) => {
+      const j = 1 + si * 2, n = sh.items.length;
+      sh.items.forEach((it, k) => {
+        const x = n >= 6 ? hx(k + 1) : it.exclusive ? hx(5.5) : hx(k + 1.5), foot = hy(j + 0.95);
+        const base = ART.img['item_' + it.id];
+        const o = { t: rt + k * 0.7 };
+        if (!it.open) { o.itemImg = lockImg(); o.col = '#3a2e24'; } else if (!it.seen) { o.itemImg = sil('i_' + it.id, base); o.col = '#7a8f86'; } else { o.itemImg = base; o.col = UPC[it.id]; }
+        if (it.exclusive) { ctx.fillStyle = 'rgba(217,165,58,0.28)'; ctx.beginPath(); ctx.ellipse(x, hy(j + 0.45), TS * 0.55, TS * 0.65, 0, 0, 7); ctx.fill(); }
+        ctx.save(); ctx.translate(x, foot); ART.draw(ctx, 'tube', TS, o); ctx.restore();
+        shipHits.push({ kind: 'tube', id: it.id, x: x - TS * 0.42, y: foot - TS * 1.25, w: TS * 0.84, h: TS * 1.25 });
+        if (hubSel.lab === it.id) { selRing(x - TS * 0.46, foot - TS * 1.28, TS * 0.92, TS * 1.3); arrow(x, foot - TS * 1.6, 'down', TS * 0.38); }
+      });
+      const seen = sh.items.filter(it => it.seen).length;
+      ctx.save(); ctx.textAlign = 'left';
+      const label = sh.name.toUpperCase() + ' · ' + seen + '/' + n + ' found';
+      ctx.font = `800 ${Math.round(Math.max(10, TS * 0.24))}px ${FONT}`;
+      const lwid = ctx.measureText(label).width + TS * 0.27;
+      ctx.restore();
+      tag(label, hx(0.8) + lwid / 2, hy(j + 1.18), Math.max(10, TS * 0.24));
+    });
+    avatarAt(4.5, 4);
+  }
+
+  // bảng hợp đồng: giấy ghim trên tấm thép; giấy vàng = DAILY
+  function boardPapers() { return (save.daily ? [['daily', save.daily]] : []).concat(save.contracts.map((c, i) => [i, c])); }
+  function wrapLines(text, maxW) {
+    const lines = []; let line = '';
+    for (const word of text.split(' ')) { const t = line ? line + ' ' + word : word; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = word; } else line = t; }
+    lines.push(line); return lines;
+  }
+  function drawBoard() {
+    const TS = HL.TS;
+    ART.setLW(Math.max(2, TS * 0.06));
+    ART.blob(ctx, ART.rrect(hx(0.35), hy(0.25), TS * 6.3, TS * 3.4, TS * 0.12), '#4f4a3c', '#423e32', TS);
+    for (const [u, v] of [[0.55, 0.45], [6.45, 0.45], [0.55, 3.45], [6.45, 3.45]]) ART.dot(ctx, hx(u), hy(v), TS * 0.05, '#2b2f30');
+    boardPapers().forEach(([key, c], k) => {
+      const col = k % 2, row = Math.floor(k / 2), x = hx(0.62 + col * 3.0), y = hy(0.5 + row * 1.55), w = TS * 2.75, h = TS * 1.38;
+      const daily = key === 'daily';
+      ctx.save(); ctx.translate(x + w / 2, y + h / 2); ctx.rotate((k % 2 ? 1 : -1) * 0.025);
+      rr(ctx, -w / 2 + 3, -h / 2 + 4, w, h, 4); ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fill();
+      rr(ctx, -w / 2, -h / 2, w, h, 4); ctx.fillStyle = c.claimed ? '#9a8f78' : daily ? '#e2b851' : '#efe2c4'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = INK; ctx.stroke();
+      ART.dot(ctx, w / 2 - 9, -h / 2 + 8, 4, '#c8442f');
+      const fs = Math.max(10, TS * 0.23);
+      ctx.font = `800 ${Math.round(fs)}px ${FONT}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = INK;
+      const lines = wrapLines((daily ? 'DAILY: ' : '') + META.contractText(c), w - 26).slice(0, 2);
+      lines.forEach((l, i) => ctx.fillText(l, -w / 2 + 7, -h / 2 + fs * 1.15 + i * fs * 1.15));
+      const k2 = Math.min(1, c.prog / c.goal), by = h / 2 - fs * 1.05;
+      rr(ctx, -w / 2 + 7, by - 5, w * 0.52, 10, 5); ctx.fillStyle = '#b8a888'; ctx.fill();
+      if (k2 > 0) { rr(ctx, -w / 2 + 7, by - 5, w * 0.52 * k2, 10, 5); ctx.fillStyle = '#6e7b4a'; ctx.fill(); }
+      rr(ctx, -w / 2 + 7, by - 5, w * 0.52, 10, 5); ctx.lineWidth = 1.5; ctx.strokeStyle = INK; ctx.stroke();
+      nut(w / 2 - fs * 2.3, by, fs * 0.42); ctx.textAlign = 'left'; ctx.fillStyle = INK; ctx.fillText('+' + c.reward, w / 2 - fs * 1.75, by + 1);
+      if (c.ready && !c.claimed) { ctx.rotate(-0.18); tag('DONE!', 0, -fs * 0.2, fs * 1.15, '#6e7b4a', '#efe2c4'); }
+      if (c.claimed) { ctx.rotate(-0.18); tag('PAID', 0, -fs * 0.2, fs * 1.1, '#7a6a55', '#efe2c4'); }
+      ctx.restore();
+      if (c.ready && !c.claimed) { ctx.globalAlpha = 0.5 + 0.5 * Math.sin(rt * 5); rr(ctx, x - 4, y - 4, w + 8, h + 8, 8); ctx.lineWidth = 3; ctx.strokeStyle = '#b9d66a'; ctx.stroke(); ctx.globalAlpha = 1; }
+      shipHits.push({ kind: 'paper', id: key, x, y, w, h });
+      if (hubSel.board === key) selRing(x - 2, y - 2, w + 4, h + 4);
+    });
+    avatarAt(3.5, 6.4);
+  }
+
+  // HUD trên: y như battle (tim theo máu tối đa, ốc, tên phòng bên phải) + bản đồ tàu ở giữa như minimap deck
+  function hubHud() {
+    ctx.fillStyle = 'rgba(30,23,18,0.95)'; ctx.fillRect(0, 0, SW, HUD_H);
+    ctx.fillStyle = '#5a4630'; ctx.fillRect(0, HUD_H - 3, SW, 3);
+    const n = 5 + META.lvl(save, 'hull'), r = Math.max(8, Math.min(14, (SW * 0.34) / (n * 2.35)));
+    const pop = shipFx.buy && shipFx.buy.id === 'hull' ? Math.max(0, 1 - (rt - shipFx.buy.t) / 0.6) : 0;
+    for (let i = 0; i < n; i++) heart(14 + r + i * r * 2.35, 30, r * (i === n - 1 ? 1 + pop * 0.8 : 1), '#c8442f');
+    nut(26, 62, 10 * (1 + bankBump * 0.3));
+    txt(String(save.bank), 44, 63, 22 * (1 + bankBump * 0.15), '#efe2c4', 'left');
+    const R = ROOMS.find(q => q.id === hubRoom);
+    txt(R.title, SW - 14, 28, 22, '#efe2c4', 'right');
+    ctx.font = `700 15px ${FONT}`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#cbb89a';
+    ctx.fillText('Rescue Ship · Day ' + (META.dayIndex(save) + 1), SW - 14, 52);
+    const cw = 14, ch = 10, gap = 3, x0 = Math.round(SW / 2 - (ROOMS.length * (cw + gap)) / 2), y0 = 52;
+    const open = roomsOpen().map(q => q.id);
+    ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0 + cw / 2, y0 + ch / 2); ctx.lineTo(x0 + (ROOMS.length - 1) * (cw + gap) + cw / 2, y0 + ch / 2); ctx.stroke();
+    ROOMS.forEach((q, i) => {
+      const X = x0 + i * (cw + gap), on = open.includes(q.id), cur = q.id === hubRoom;
+      const fl = shipFx[q.mod] !== undefined && rt - shipFx[q.mod] < 2.2 && Math.sin(rt * 14) > 0;
+      rr(ctx, X, y0, cw, ch, 3); ctx.fillStyle = cur ? '#d9a53a' : fl ? '#f6efdc' : on ? '#efe2c4' : '#3a2e24'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = INK; ctx.stroke();
+      if (on) { ctx.font = `800 8px ${FONT}`; ctx.textAlign = 'center'; ctx.fillStyle = '#5a4630'; ctx.fillText(q.ic, X + cw / 2, y0 + ch / 2 + 1); }
+      if (on && newRooms.has(q.id) && !seenRooms[q.id]) ART.dot(ctx, X + cw, y0, 3.5, Math.sin(rt * 8) > 0 ? '#c8442f' : '#f2907e');
+      if (on) shipHits.push({ kind: 'map', id: q.id, x: X - 1, y: y0 - 8, w: cw + 2, h: ch + 16 });
+    });
+  }
+
+  function hubBurst(x, y, col) {
+    for (let i = 0; i < 16; i++) { const a = Math.random() * 7, v = 60 + Math.random() * 140; hubParts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 60, t: 0, life: 0.5 + Math.random() * 0.3, col: col || '#f1d36a' }); }
+  }
+  function drawHub(dt) {
+    shipHits = [];
+    bankBump = Math.max(0, bankBump - dt * 5);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.drawImage(bgC, 0, 0, SW, SH);
+    // đổi phòng: phòng mới trượt vào từ phía cửa vừa đi qua
+    let off = 0, al = 1;
+    if (hubSlide) { hubSlide.t += dt; const k = Math.min(1, hubSlide.t / 0.22); off = hubSlide.dir * (1 - k) * (1 - k) * HL.TS * 1.6; al = Math.min(1, 0.25 + k); if (k >= 1) hubSlide = null; }
+    ctx.save(); ctx.translate(off, 0); ctx.globalAlpha = al;
+    const P = HL.PAD, side = 7 * HL.TS + P * 2;
+    ctx.drawImage(hubRoomCanvas(hubRoom), HL.x - P, HL.y - P, side, side);
+    ({ workshop: drawWorkshop, crew: drawCrew, lab: drawLab, board: drawBoard })[hubRoom]();
+    const open = roomsOpen(), i = open.findIndex(q => q.id === hubRoom);
+    if (open[i - 1]) hubDoor(-1, newRooms.has(open[i - 1].id) && !seenRooms[open[i - 1].id]);
+    if (open[i + 1]) hubDoor(1, newRooms.has(open[i + 1].id) && !seenRooms[open[i + 1].id]);
+    ctx.restore(); ctx.globalAlpha = 1;
+    // tia lửa + chữ bay khi mua/nhận thưởng
+    hubParts = hubParts.filter(p => (p.t += dt) < p.life);
+    for (const p of hubParts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 420 * dt; ctx.globalAlpha = 1 - p.t / p.life; ctx.fillStyle = p.col; ctx.fillRect(p.x - 2.5, p.y - 2.5, 5, 5); }
+    ctx.globalAlpha = 1;
+    hubFloats = hubFloats.filter(f => (f.t += dt) < 1.2);
+    for (const f of hubFloats) { ctx.globalAlpha = Math.min(1, (1.2 - f.t) * 2.5); txt(f.text, clamp(f.x, 70, SW - 70), f.y - f.t * 34, 18, '#f1d36a'); }
+    ctx.globalAlpha = 1;
+    // bong bóng thoại khi chạm nhân vật / BOLT
+    if (shipSay && rt - shipSay.t < 2.6) {
+      const hit = shipHits.find(q => q.who === shipSay.who);
+      if (hit) bubble(shipSay.text, hit.x + hit.w / 2, Math.max(HUD_H + 26, hit.y - 18), 14);
+    }
+    ctx.fillStyle = '#1e1712'; ctx.fillRect(0, HL.zoneY, SW, SH - HL.zoneY);
+    ctx.fillStyle = '#5a4630'; ctx.fillRect(0, HL.zoneY, SW, 3);
+    hubHud();
+  }
+
+  // ----- chọn mặc định khi vào phòng: thứ đáng xem nhất -----
+  function ensureSel(room) {
+    const s = hubSel[room];
+    if (room === 'workshop' && s) return;
+    if (room === 'workshop') {
+      const opts = META.WORKSHOP.filter(w => META.lvl(save, w.id) < w.max);
+      const cost = w => META.CONFIG.workshopCost[META.lvl(save, w.id)];
+      const can = opts.filter(w => cost(w) <= save.bank).sort((a, b) => cost(a) - cost(b));
+      hubSel.workshop = (can[0] || opts[0] || META.WORKSHOP[0]).id;
+    } else if (room === 'crew') { if (!s || !META.CREW.some(c => c.id === s)) hubSel.crew = pickId(); }
+    else if (room === 'lab') {
+      if (s) return;
+      const all = [].concat(...META.shelfState(save).map(sh => sh.items));
+      hubSel.lab = (all.find(it => it.open && !it.seen) || all.find(it => it.exclusive) || all[0]).id;
+    } else if (room === 'board') {
+      const ps = boardPapers();
+      if (ps.some(([k]) => k === s)) return;
+      const rdy = ps.find(([, c]) => c.ready && !c.claimed);
+      hubSel.board = (rdy || ps[0] || ['daily'])[0];
+    }
+  }
+
+  // ----- thẻ chi tiết ở dải dưới (DOM) -----
+  const pipsH = (l, m) => Array.from({ length: m }, (_, i) => `<i class="pp${i < l ? ' on' : ''}"></i>`).join('');
+  const tileH = (inner, dark) => `<div class="tile${dark ? ' dark' : ''}">${inner}</div>`;
+  const imgH = (src, sil) => src ? `<img src="${src}" alt=""${sil ? ' class="sil"' : ''}>` : '';
+  function cardHTML() {
+    const s = hubSel[hubRoom];
+    if (hubRoom === 'workshop') {
+      const w = META.WORKSHOP.find(q => q.id === s), l = META.lvl(save, s), max = l >= w.max, cost = META.CONFIG.workshopCost[l];
+      const [lab, f] = WS_FX[s];
+      const fx = max ? `${lab}: <b>${f(l)}</b> (max)` : `${lab}: ${f(l)} → <b>${f(l + 1)}</b>`;
+      const btn = max ? '<button class="key off cta" disabled>MAX</button>'
+        : save.bank >= cost ? `<button class="key mus cta" data-buy="${s}">${cost} ${NUT}</button>`
+          : `<button class="key off cta" disabled><small>Need</small>${cost - save.bank} ${NUT}</button>`;
+      return tileH(imgH(SPR(WS_ICO[s]))) + `<div class="info"><div class="nm one">${w.name}${pipsH(l, w.max)}</div><div class="ds">${w.desc}</div><div class="fx">${fx}</div></div>` + btn;
+    }
+    if (hubRoom === 'crew') {
+      const c = META.CREW.find(q => q.id === s), have = !!save.crew[c.id], picked = pickId() === c.id, di = META.dayIndex(save);
+      const btn = !have ? '' : picked ? '<button class="key off cta" disabled>Picked</button>' : `<button class="key mus cta" data-pick="${c.id}">Pick</button>`;
+      // đã cứu: nút Pick tự nói lên việc cần làm; chưa cứu: ghi chỗ/ngày gặp
+      const st = have ? '' : c.day > di ? 'Distress signal in ' + (c.day - di) + ' day' + (c.day - di > 1 ? 's' : '') + '.' : 'Rescue pod on deck ' + (c.deck + 1) + '. Break the cocoon.';
+      return tileH(imgH(crewSrc(c.id), !have), !have) + `<div class="info"><div class="nm">${c.name}</div><div class="ds">${c.perk}</div>${st ? `<div class="fx">${st}</div>` : ''}</div>` + btn;
+    }
+    if (hubRoom === 'lab') {
+      const sh = META.shelfState(save).find(q => q.items.some(it => it.id === s)), it = sh.items.find(x => x.id === s), u = UP(s);
+      let nm, ds;
+      if (it.exclusive && !it.open) { nm = `<span class="tag">LAB ONLY</span>${u.name}`; ds = u.desc + ` Unlocks when every ${sh.name} tube is filled.`; }
+      else if (it.exclusive && !it.seen) { nm = `<span class="tag">LAB ONLY</span>${u.name}`; ds = 'Unlocked! Now it can show up in crates and vending bays.'; }
+      else if (!it.open) { nm = 'Locked tube'; ds = `Find every open ${sh.name} buff first.`; }
+      else if (!it.seen) { nm = 'Not found yet'; ds = 'Look in supply crates (any deck) or vending bays (decks 2-3).'; }
+      else { nm = u.name; ds = u.desc; }
+      const seen = sh.items.filter(x => x.seen).length;
+      const icon = !it.open ? LOCK : imgH(SPR('item_' + s), !it.seen);
+      return tileH(icon, !it.open || !it.seen) + `<div class="info"><div class="nm">${nm}</div><div class="ds">${ds}</div><div class="bar"><i style="width:${Math.round(seen / sh.items.length * 100)}%"></i></div></div>`;
+    }
+    const pp = boardPapers().find(([k]) => k === s);
+    if (!pp) return '<div class="info"><div class="ds">No contracts yet.</div></div>';
+    const c = pp[1], daily = s === 'daily', k = Math.min(1, c.prog / c.goal);
+    const btn = c.claimed ? '<button class="key off cta" disabled>Done</button>'
+      : c.ready ? `<button class="key mus cta" ${daily ? 'data-daily="1"' : `data-claim="${s}"`}>+${c.reward} ${NUT}</button>`
+        : `<button class="key off cta" disabled>${Math.min(c.prog, c.goal)}/${c.goal}</button>`;
+    const sub = daily ? (c.claimed ? 'New daily contract tomorrow.' : 'Big reward. Changes every day.') : 'Counts across runs. Claim it here.';
+    return tileH(`<div class="paper${daily ? ' daily' : ''}"></div>`) + `<div class="info"><div class="nm">${daily ? '<span class="tag">DAILY</span>' : ''}${META.contractText(c)}</div><div class="ds">${sub}</div><div class="bar"><i style="width:${k * 100}%"></i></div></div>` + btn;
+  }
+  function keyHTML(b, r, rot) {
+    b.disabled = !r; b.className = 'key nav' + (r ? '' : ' off');
+    b.innerHTML = TRI(rot) + (r ? `<span>${r.name.toUpperCase()}</span>` : '') + (r && newRooms.has(r.id) && !seenRooms[r.id] ? '<span class="new">NEW</span>' : '');
+    b.dataset.room = r ? r.id : '';
+  }
+  function renderHub() {
+    const open = roomsOpen();
+    if (!open.some(r => r.id === hubRoom)) hubRoom = (open.find(r => r.id === 'workshop') || open[0] || ROOMS[1]).id;
+    seenRooms[hubRoom] = true;
+    ensureSel(hubRoom);
+    const tm = META.tomorrow(save);
+    $('hubTomorrow').innerHTML = `<i class="hzs"></i>${tm.kind === 'crew' ? `<img src="${crewSrc(tm.crew)}" alt="">` : ''}<div><b>${tm.days <= 1 ? 'TOMORROW' : 'IN ' + tm.days + ' DAYS'}:</b> ${tm.text}</div>`;
+    const i = open.findIndex(r => r.id === hubRoom);
+    keyHTML($('hubPrev'), open[i - 1], -90); keyHTML($('hubNext'), open[i + 1], 90);
+    const C = $('hubCard');
+    C.innerHTML = cardHTML();
+    const fxAt = () => { const h = shipHits.find(q => q.id === hubSel[hubRoom] && q.kind !== 'map'); return h ? [h.x + h.w / 2, h.y + h.h * 0.35] : [SW / 2, HL.y + HL.TS * 3]; };
+    for (const b of C.querySelectorAll('[data-buy]')) b.onclick = () => {
+      const id = b.dataset.buy;
+      if (!META.buy(save, id)) return;
+      shipFx.buy = { id, t: rt }; sfx('buff'); buzz(20); bankBump = 1;
+      const [x, y] = fxAt(), w0 = META.WORKSHOP.find(q => q.id === id);
+      hubBurst(x, y); hubFloats.push({ text: id === 'hull' ? '+1 MAX HP' : w0.name + ' ' + ['I', 'II', 'III'][META.lvl(save, id) - 1] + '!', x, y: y - HL.TS * 0.6, t: 0 });
+      renderHub();
+    };
+    for (const b of C.querySelectorAll('[data-pick]')) b.onclick = () => {
+      save.pick = b.dataset.pick; META.save(save); sfx('pick'); buzz(15);
+      const [x, y] = fxAt(); hubBurst(x, y, '#efe2c4');
+      const lines = META.LINES[save.pick]; if (lines) shipSay = { who: save.pick, i: 0, t: rt, text: lines[0] };
+      renderHub();
+    };
+    const paid = r => { if (!r) return; sfx('clear'); buzz(25); bankBump = 1; const [x, y] = fxAt(); hubBurst(x, y, '#b9d66a'); hubFloats.push({ text: '+' + r + ' scrap', x, y: y - HL.TS * 0.4, t: 0 }); renderHub(); };
+    const d = C.querySelector('[data-daily]');
+    if (d) d.onclick = () => { const r0 = save.daily && save.daily.reward; paid(META.claimDaily(save) ? r0 : 0); };
+    for (const b of C.querySelectorAll('[data-claim]')) b.onclick = () => paid(META.claim(save, +b.dataset.claim));
+    showSay();
+  }
+  function showSay() {
+    const box = $('hubNews');
+    if (!say.length) { box.style.display = 'none'; $('hubCard').style.visibility = ''; return; }
+    box.innerHTML = `<img src="${SPR('obj_vendor')}" alt=""><div class="say">${say[0]}<small>${say.length > 1 ? 'Tap for more (' + (say.length - 1) + ')' : 'Tap to close'}</small></div>`;
+    box.style.display = 'flex'; $('hubCard').style.visibility = 'hidden';
+  }
+  $('hubNews').addEventListener('click', () => { say.shift(); sfx('tick'); showSay(); });
+  function goRoom(id, dir) {
+    if (!id || id === hubRoom) return;
+    const open = roomsOpen();
+    if (!dir) dir = open.findIndex(r => r.id === id) > open.findIndex(r => r.id === hubRoom) ? 1 : -1;
+    hubRoom = id; hubSlide = { dir, t: 0 }; shipSay = null; hubFloats = []; hubParts = [];
+    sfx('step'); buzz(8);
+    renderHub();
+  }
+  function hubTap(hit) {
+    audioInit(); guardBack();
+    if (hit.kind === 'door') { const open = roomsOpen(), i = open.findIndex(r => r.id === hubRoom), r = open[i + hit.dir]; if (r) goRoom(r.id, hit.dir); return; }
+    if (hit.kind === 'map') { goRoom(hit.id); return; }
+    say = [];
+    if (hit.id !== undefined && hit.kind !== 'talk') hubSel[hubRoom] = hit.id;
+    if (hit.who) {
+      const lines = META.LINES[hit.who] || EXTRA_LINES[hit.who] || ['...'];
+      const prev = shipSay && shipSay.who === hit.who ? shipSay.i : -1;
+      shipSay = { who: hit.who, i: (prev + 1) % lines.length, t: rt };
+      shipSay.text = lines[shipSay.i];
+    }
+    sfx('tick'); buzz(8);
+    renderHub();
+  }
+  function hubPoint(e) {
+    if (!hubOn()) return;
+    const r = cvs.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+    const hit = shipHits.slice().reverse().find(q => px >= q.x && px <= q.x + q.w && py >= q.y && py <= q.y + q.h);
+    if (hit) hubTap(hit);
+  }
+  cvs.addEventListener('pointerdown', hubPoint);
+  $('hubPrev').addEventListener('click', () => goRoom($('hubPrev').dataset.room, -1));
+  $('hubNext').addEventListener('click', () => goRoom($('hubNext').dataset.room, 1));
   function showHub() {
     $('end').classList.remove('show');
     META.checkUnlocks(save);
     // mỗi khu mới do BOLT giới thiệu, 1 câu 1 lần (hàng đợi, chạm để xem câu kế)
     const mods = META.newModules(save);
-    for (const m of mods) { shipFx[m.id] = rt; say.push(m.say); }
-    for (const c of (lastResult && lastResult.rescued) || []) say.push(META.CREW.find(x => x.id === c).name + ' is aboard! Pick them in the Crew tab.');
-    const last = mods.filter(m => TAB_OF[m.id]).pop();
-    if (last) hubTab = TAB_OF[last.id];
+    for (const m of mods) { shipFx[m.id] = rt; say.push(m.say); if (ROOM_OF[m.id]) newRooms.add(ROOM_OF[m.id]); }
+    for (const c of (lastResult && lastResult.rescued) || []) say.push(META.CREW.find(x => x.id === c).name + ' is aboard! Pick them in the Crew Bunks.');
+    const last = mods.filter(m => ROOM_OF[m.id]).pop();
+    if (last) { hubRoom = ROOM_OF[last.id]; hubSlide = null; }
+    if (lastResult && lastResult.rescued && lastResult.rescued.length && save.unl.crew) { hubRoom = 'crew'; hubSel.crew = lastResult.rescued[0]; }
     save.news = []; META.save(save);
     lastResult = null;
-    showSay();
+    for (const k of Object.keys(hubSel)) if (k !== 'crew') delete hubSel[k];
+    document.body.classList.add('hubmode');
     $('hub').classList.add('show');
     renderHub();
   }
-  function showSay() {
-    const box = $('hubNews');
-    if (!say.length) { box.style.display = 'none'; return; }
-    box.innerHTML = `<img src="${SPR('obj_vendor')}" alt=""><div class="say">${say[0]}${say.length > 1 ? '<div class="more">Tap for more (' + (say.length - 1) + ')</div>' : ''}</div>`;
-    box.style.display = 'flex';
-  }
-  $('hubNews').addEventListener('click', () => { say.shift(); showSay(); });
-  function renderHub() {
-    $('hubBank').textContent = save.bank;
-    $('hubDay').textContent = 'Day ' + (META.dayIndex(save) + 1);
-    const tm = META.tomorrow(save);
-    const tImg = tm.kind === 'crew' ? `<img src="${crewSrc(tm.crew)}" alt="">` : '';
-    $('hubTomorrow').innerHTML = tImg + `<div><b>${tm.days <= 1 ? 'Tomorrow' : 'In ' + tm.days + ' days'}:</b> ${tm.text}</div>`;
-    const tabs = [['workshop', 'Workshop'], ['crew', 'Crew'], ['lab', 'Lab'], ['contracts', 'Contracts']].filter(([k]) => save.unl[k]);
-    if (!tabs.some(([k]) => k === hubTab) && tabs.length) hubTab = tabs[0][0];
-    $('hubTabs').innerHTML = tabs.map(([k, n]) => `<button class="tab${k === hubTab ? ' on' : ''}" data-tab="${k}">${n}${!seenTabs[k] && k !== hubTab ? '<span class="new">NEW</span>' : ''}</button>`).join('');
-    seenTabs[hubTab] = true;
-    for (const b of $('hubTabs').querySelectorAll('.tab')) b.onclick = () => { hubTab = b.dataset.tab; renderHub(); };
-    const P = $('hubPanel');
-    if (hubTab === 'workshop') {
-      P.innerHTML = META.WORKSHOP.map(w => {
-        const l = META.lvl(save, w.id), max = l >= w.max, cost = META.CONFIG.workshopCost[l];
-        const pips = '●'.repeat(l) + '○'.repeat(w.max - l);
-        const btn = max ? '<button class="buy" disabled>MAX</button>' : save.bank >= cost ? `<button class="buy" data-buy="${w.id}">${cost} ⚙</button>` : `<button class="buy" disabled>Need ${cost - save.bank}</button>`;
-        const ico = { hull: 'item_suit', feed: 'item_trigger', scanner: 'item_magnet', kit: 'obj_chest', breaker: 'item_heavy', stock: 'obj_vendor' }[w.id];
-        return `<div class="row"><div class="ico"><img src="${SPR(ico)}" alt=""></div><div class="info"><div class="nm">${w.name} <span class="pips">${pips}</span></div><div class="ds">${w.desc}</div></div>${btn}</div>`;
-      }).join('');
-      for (const b of P.querySelectorAll('[data-buy]')) b.onclick = () => { const id = b.dataset.buy; if (META.buy(save, id)) { shipFx.buy = { id, t: rt }; sfx('buff'); buzz(20); renderHub(); } };
-    } else if (hubTab === 'crew') {
-      P.innerHTML = META.CREW.map(c => {
-        const have = save.crew[c.id], picked = save.pick === c.id;
-        let right;
-        if (have) right = picked ? '<button class="buy" disabled>Picked</button>' : `<button class="buy" data-pick="${c.id}">Pick</button>`;
-        else {
-          const di = META.dayIndex(save);
-          right = `<div class="ds" style="max-width:96px;text-align:right">${c.day > di ? 'Signal in ' + (c.day - di) + ' day' + (c.day - di > 1 ? 's' : '') : 'Rescue pod on deck ' + (c.deck + 1)}</div>`;
-        }
-        return `<div class="row${have ? '' : ' locked'}"><div class="ico"><img src="${crewSrc(c.id)}" alt=""></div><div class="info"><div class="nm">${c.name}</div><div class="ds">${c.perk}</div></div>${right}</div>`;
-      }).join('');
-      for (const b of P.querySelectorAll('[data-pick]')) b.onclick = () => { save.pick = b.dataset.pick; META.save(save); sfx('pick'); renderHub(); };
-    } else if (hubTab === 'lab') {
-      P.innerHTML = META.shelfState(save).map(sh => {
-        const tubes = sh.items.map(it => {
-          const sel = (labSel === it.id ? ' sel' : '') + (it.exclusive ? ' excl' : '');
-          return it.open
-            ? `<div class="tubei${it.seen ? '' : ' unseen'}${sel}" data-tube="${it.id}"><img src="${SPR('item_' + it.id)}" alt=""></div>`
-            : `<div class="tubei lockd${sel}" data-tube="${it.id}"><span class="lk">🔒</span></div>`;
-        }).join('');
-        const locked = sh.items.some(it => !it.open), unseen = sh.items.filter(it => it.open && !it.seen).length;
-        const hint = locked ? (unseen ? `Find ${unseen} more ${sh.name} buff${unseen > 1 ? 's' : ''} to unlock the next tube.` : 'Next tube unlocks on your next run.') : 'Shelf complete!';
-        const it = sh.items.find(x => x.id === labSel);
-        let info = '';
-        if (it) {
-          if (it.exclusive && !it.open) info = `<b>Lab exclusive: ${UP(it.id).name}.</b> ${UP(it.id).desc} Unlocks when every ${sh.name} tube is filled.`;
-          else if (it.exclusive && !it.seen) info = `<b>Lab exclusive: ${UP(it.id).name}.</b> Unlocked! Now it can show up in crates and vending bays.`;
-          else if (!it.open) info = `<b>Locked.</b> Find every open ${sh.name} buff first.`;
-          else if (!it.seen) info = `<b>Not found yet.</b> Look in supply crates (any deck) or vending bays (decks 2-3).`;
-          else info = `<b>${UP(it.id).name}:</b> ${UP(it.id).desc}`;
-        }
-        return `<div class="shelf"><h3>${sh.name}</h3><div class="tubes">${tubes}</div>${info ? '<div class="labinfo">' + info + '</div>' : ''}<div class="hint">${hint}</div></div>`;
-      }).join('');
-      for (const b of P.querySelectorAll('[data-tube]')) b.onclick = () => { labSel = labSel === b.dataset.tube ? null : b.dataset.tube; renderHub(); };
-    } else if (hubTab === 'contracts') {
-      const row = (c, attr, daily) => {
-        const k = Math.min(1, c.prog / c.goal);
-        const btn = c.claimed ? '<button class="buy" disabled>Done</button>' : c.ready ? `<button class="buy" ${attr}>+${c.reward} ⚙</button>` : `<button class="buy" disabled>${Math.min(c.prog, c.goal)}/${c.goal}</button>`;
-        const tag = daily ? `<span class="tag">DAILY</span>` : '';
-        const sub = daily ? `<div class="ds">${c.claimed ? 'New daily contract tomorrow.' : 'Big reward. Changes every day.'}</div>` : '';
-        return `<div class="row${daily ? ' daily' : ''}"><div class="info"><div class="nm">${tag}${META.contractText(c)}</div>${sub}<div class="bar"><i style="width:${k * 100}%"></i></div></div>${btn}</div>`;
-      };
-      P.innerHTML = (save.daily ? row(save.daily, 'data-daily="1"', true) : '') + save.contracts.map((c, i) => row(c, `data-claim="${i}"`, false)).join('');
-      const d = P.querySelector('[data-daily]');
-      if (d) d.onclick = () => { if (META.claimDaily(save)) { sfx('clear'); buzz(25); renderHub(); } };
-      for (const b of P.querySelectorAll('[data-claim]')) b.onclick = () => { if (META.claim(save, +b.dataset.claim)) { sfx('clear'); buzz(25); renderHub(); } };
-    } else P.innerHTML = '';
-    drawShip();
-  }
-  // cảnh tàu cứu hộ: các khu hiện dần theo mốc (khu mới loé sáng), BOLT đứng góc trái, đồng đội đứng giữa; chạm để nghe thoại
-  let shipW = 0, shipH = 0;
-  function drawShip() {
-    const c = $('hubShip'), w = c.clientWidth || SW - 24, h = c.clientHeight || 150, dpr = Math.min(2, window.devicePixelRatio || 1);
-    if (w !== shipW || h !== shipH) { shipW = w; shipH = h; c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
-    const x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const floorY = h * 0.78;
-    x.fillStyle = '#2b2119'; x.fillRect(0, 0, w, h);
-    x.strokeStyle = '#3a2e24'; x.lineWidth = 2;
-    for (let i = 1; i < 6; i++) { x.beginPath(); x.moveTo(w * i / 6, 22); x.lineTo(w * i / 6, floorY); x.stroke(); }
-    x.fillStyle = '#3a2e24'; x.fillRect(0, floorY, w, h - floorY);
-    x.fillStyle = '#5a4630'; x.fillRect(0, floorY, w, 3);
-    const mods = META.MODULES.filter(m => m.when(save)).map(m => m.id);
-    const lit = 1 + mods.length + Object.keys(save.crew).length - 1;
-    for (let i = 0; i < 8; i++) {
-      const lx = w * (0.08 + i * 0.12), on = i < lit;
-      x.beginPath(); x.arc(lx, 12, 5, 0, 7); x.fillStyle = on ? '#f1d36a' : '#4a3a2c'; x.fill(); x.lineWidth = 2; x.strokeStyle = '#1b1410'; x.stroke();
-      if (on) { const gr = x.createRadialGradient(lx, 12, 2, lx, 12, 44); gr.addColorStop(0, 'rgba(241,211,106,0.22)'); gr.addColorStop(1, 'rgba(241,211,106,0)'); x.fillStyle = gr; x.fillRect(lx - 44, 0, 88, 66); }
-    }
-    // khu trên vách sau: chưa mở = hốc tối có băng chéo "đang sửa"
-    const SLOTS = [['workshop', 0.2], ['board', 0.4], ['lab', 0.6], ['trophy', 0.8]];
-    for (const [id, fx] of SLOTS) {
-      const mx = w * fx, my = floorY - 4, on = mods.includes(id);
-      const bw = Math.min(54, w * 0.15), bh = h * 0.42;
-      if (!on) {
-        x.fillStyle = '#1b1410'; x.fillRect(mx - bw / 2, my - bh, bw, bh);
-        x.strokeStyle = 'rgba(217,165,58,0.35)'; x.lineWidth = 4;
-        x.beginPath(); x.moveTo(mx - bw / 2, my - bh); x.lineTo(mx + bw / 2, my); x.moveTo(mx + bw / 2, my - bh); x.lineTo(mx - bw / 2, my); x.stroke();
-        continue;
-      }
-      x.save(); x.translate(mx, my);
-      if (id === 'workshop') {
-        x.fillStyle = '#6d5a42'; x.fillRect(-bw / 2, -bh * 0.38, bw, bh * 0.1); x.fillRect(-bw / 2 + 3, -bh * 0.28, 5, bh * 0.28); x.fillRect(bw / 2 - 8, -bh * 0.28, 5, bh * 0.28);
-        const im = ART.img.item_heavy; if (im && im.complete) x.drawImage(im, -bw * 0.4, -bh * 0.75, bw * 0.45, bw * 0.45 * im.naturalHeight / im.naturalWidth);
-        x.fillStyle = '#86827a'; x.fillRect(bw * 0.05, -bh * 0.55, bw * 0.35, bh * 0.17);
-      } else if (id === 'board') {
-        x.fillStyle = '#5d5846'; x.fillRect(-bw / 2, -bh, bw, bh * 0.75); x.strokeStyle = '#1b1410'; x.lineWidth = 2; x.strokeRect(-bw / 2, -bh, bw, bh * 0.75);
-        for (let k = 0; k < 3; k++) { x.fillStyle = k === 0 && save.daily ? '#d9a53a' : '#efe2c4'; x.fillRect(-bw / 2 + 5, -bh + 6 + k * bh * 0.22, bw - 10, bh * 0.15); }
-      } else if (id === 'lab') {
-        for (let k = 0; k < 3; k++) {
-          const tx = -bw / 2 + 6 + k * (bw - 12) / 2, tw = 10;
-          x.fillStyle = 'rgba(207,227,214,0.25)'; x.fillRect(tx - tw / 2, -bh * 0.9, tw, bh * 0.8);
-          x.fillStyle = ['#6e7b4a', '#4f7fa0', '#b04a6a'][k]; x.globalAlpha = 0.6; x.fillRect(tx - tw / 2, -bh * 0.6, tw, bh * 0.5); x.globalAlpha = 1;
-          x.strokeStyle = '#1b1410'; x.lineWidth = 2; x.strokeRect(tx - tw / 2, -bh * 0.9, tw, bh * 0.8);
-        }
-      } else if (id === 'trophy') {
-        x.fillStyle = '#6d5a42'; x.fillRect(-bw / 2, -bh * 0.3, bw, 5);
-        x.fillStyle = '#cf9f44'; x.beginPath(); x.moveTo(-14, -bh * 0.3); x.lineTo(-14, -bh * 0.6); x.lineTo(-7, -bh * 0.45); x.lineTo(0, -bh * 0.7); x.lineTo(7, -bh * 0.45); x.lineTo(14, -bh * 0.6); x.lineTo(14, -bh * 0.3); x.closePath(); x.fill();
-        x.strokeStyle = '#1b1410'; x.lineWidth = 2; x.stroke();
-      }
-      // khu mới mở: loé sáng 2 giây
-      const t0 = shipFx[id];
-      if (t0 !== undefined && rt - t0 < 2.2) {
-        const k = (rt - t0) / 2.2;
-        x.globalAlpha = (1 - k) * (0.6 + 0.4 * Math.sin(rt * 14));
-        x.strokeStyle = '#f6efdc'; x.lineWidth = 3; x.strokeRect(-bw / 2 - 4, -bh - 4, bw + 8, bh + 8);
-        x.fillStyle = '#f1d36a'; for (let i = 0; i < 6; i++) { const a = i + rt * 3; x.fillRect(Math.cos(a) * bw * 0.7 - 2, -bh / 2 + Math.sin(a) * bh * 0.6 - 2, 4, 4); }
-        x.globalAlpha = 1;
-      }
-      x.restore();
-    }
-    shipHits = [];
-    // BOLT (robot của tàu) ở góc trái
-    const bolt = ART.img.vendor;
-    if (bolt && bolt.complete && bolt.naturalWidth) {
-      const hh = h * 0.5, ww = hh * bolt.naturalWidth / bolt.naturalHeight, bx = 8;
-      x.drawImage(bolt, bx, floorY + 6 - hh, ww, hh);
-      shipHits.push({ who: 'bolt', x: bx, y: floorY + 6 - hh, w: ww, h: hh });
-    }
-    // đồng đội: người được chọn đứng giữa, cao hơn, có tim máu tối đa trên đầu
-    const crew = META.CREW.filter(cc => save.crew[cc.id]);
-    const step = Math.min(76, (w - 80) / (crew.length + 0.5));
-    crew.forEach((cc, i) => {
-      const im = ART.img[cc.id === 'janitor' ? 'crew_janitor' : 'crew_' + cc.id];
-      const picked = save.pick === cc.id;
-      const px = w * 0.56 + (i - (crew.length - 1) / 2) * step, base = h * 0.92, hh = picked ? h * 0.66 : h * 0.52;
-      if (picked) { x.fillStyle = 'rgba(241,211,106,0.16)'; x.beginPath(); x.moveTo(px - 8, 0); x.lineTo(px + 8, 0); x.lineTo(px + 40, base); x.lineTo(px - 40, base); x.closePath(); x.fill(); }
-      x.fillStyle = 'rgba(0,0,0,0.35)'; x.beginPath(); x.ellipse(px, base, 22, 6, 0, 0, 7); x.fill();
-      let top = base - hh;
-      if (im && im.complete && im.naturalWidth) {
-        const ww = hh * im.naturalWidth / im.naturalHeight, bob = Math.sin(rt * 3 + i) * 1.5;
-        x.drawImage(im, px - ww / 2, base - hh + bob, ww, hh);
-        shipHits.push({ who: cc.id, x: px - ww / 2, y: base - hh, w: ww, h: hh });
-      }
-      if (picked) {
-        const n = 5 + META.lvl(save, 'hull'), r = 5, gap = 11, y0 = top - 8;
-        const pop = shipFx.buy && shipFx.buy.id === 'hull' ? Math.max(0, 1 - (rt - shipFx.buy.t) / 0.6) : 0;
-        for (let k = 0; k < n; k++) {
-          const hx = px - (n - 1) * gap / 2 + k * gap, s = k === n - 1 ? 1 + pop * 0.9 : 1;
-          x.save(); x.translate(hx, y0); x.scale(s, s);
-          x.beginPath(); x.moveTo(0, r * 0.9); x.bezierCurveTo(-r * 1.7, -r * 0.2, -r * 0.7, -r * 1.4, 0, -r * 0.45); x.bezierCurveTo(r * 0.7, -r * 1.4, r * 1.7, -r * 0.2, 0, r * 0.9);
-          x.fillStyle = '#c8442f'; x.fill(); x.lineWidth = 1.5; x.strokeStyle = '#1b1410'; x.stroke(); x.restore();
-        }
-      }
-    });
-    // mua ở xưởng: chữ bay lên trên nhân vật được chọn
-    if (shipFx.buy && rt - shipFx.buy.t < 1.2) {
-      const k = (rt - shipFx.buy.t) / 1.2, w0 = META.WORKSHOP.find(q => q.id === shipFx.buy.id);
-      const txt2 = shipFx.buy.id === 'hull' ? '+1 MAX HP' : w0.name + ' ' + ['I', 'II', 'III'][META.lvl(save, w0.id) - 1] + '!';
-      x.globalAlpha = 1 - k; x.font = `800 16px ${FONT}`; x.textAlign = 'center'; x.lineWidth = 4; x.strokeStyle = '#1b1410';
-      x.strokeText(txt2, w * 0.56, h * 0.3 - k * 20); x.fillStyle = '#f1d36a'; x.fillText(txt2, w * 0.56, h * 0.3 - k * 20); x.globalAlpha = 1;
-    }
-    // bong bóng thoại
-    if (shipSay && rt - shipSay.t < 2.6) {
-      const hit = shipHits.find(q => q.who === shipSay.who);
-      if (hit) {
-        x.font = `700 13px ${FONT}`;
-        const tw = Math.min(w * 0.62, x.measureText(shipSay.text).width + 16), bx = clamp(hit.x + hit.w / 2 - tw / 2, 4, w - tw - 4);
-        const lines = []; let line = '';
-        for (const word of shipSay.text.split(' ')) { const t = line ? line + ' ' + word : word; if (x.measureText(t).width > tw - 14 && line) { lines.push(line); line = word; } else line = t; }
-        lines.push(line);
-        const bh = lines.length * 15 + 10, by = Math.max(24, hit.y - bh - 4);
-        x.fillStyle = '#efe2c4'; x.strokeStyle = '#1b1410'; x.lineWidth = 2.5;
-        x.beginPath(); ART.rrect(bx, by, tw, bh, 8)(x); x.fill(); x.stroke();
-        x.fillStyle = '#2b1d16'; x.textAlign = 'center'; x.textBaseline = 'middle';
-        lines.forEach((l, i) => x.fillText(l, bx + tw / 2, by + 12 + i * 15));
-      }
-    }
-  }
-  $('hubShip').addEventListener('pointerdown', e => {
-    const r = $('hubShip').getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
-    const hit = shipHits.slice().reverse().find(q => px >= q.x && px <= q.x + q.w && py >= q.y && py <= q.y + q.h);
-    if (!hit) return;
-    const lines = META.LINES[hit.who] || ['...'];
-    const prev = shipSay && shipSay.who === hit.who ? shipSay.i : -1;
-    shipSay = { who: hit.who, i: (prev + 1) % lines.length, t: rt };
-    shipSay.text = lines[shipSay.i];
-    sfx('tick'); buzz(8);
-  });
+  window.__vs.hub = {
+    get room() { return hubRoom; }, get sel() { return hubSel; }, get hits() { return shipHits; }, get say() { return shipSay; },
+    go: id => goRoom(id), tap: (kind, id) => { const h = shipHits.find(q => q.kind === kind && q.id === id); if (h) hubTap(h); return !!h; },
+  };
   $('hubLaunch').addEventListener('click', () => { audioInit(); sfx('door'); newRun(); });
 
   // ---------- input: D-pad 4 nút + phím ----------
@@ -2362,7 +2653,12 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     if (DEV && e.code === 'KeyR') { save = META.reset(); location.reload(); }
     if (DEV && e.code === 'KeyM') { save.bank += 100; META.save(save); if ($('hub').classList.contains('show')) renderHub(); }
     if (DEV && e.code === 'KeyJ') { save.dayOffset = (save.dayOffset || 0) + 1; save.visits++; META.checkUnlocks(save); META.save(save); if ($('hub').classList.contains('show')) renderHub(); }
-    if ($('hub').classList.contains('show')) { if (e.code === 'Space' || e.code === 'Enter') $('hubLaunch').click(); return; }
+    if (hubOn()) {
+      if (e.code === 'Space' || e.code === 'Enter') $('hubLaunch').click();
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') $('hubPrev').click();
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') $('hubNext').click();
+      return;
+    }
     const d = KEYS[e.code];
     if (d) { e.preventDefault(); if (!e.repeat) pressStart(d, 'key', e.code); }
     if (DEV && e.code === 'KeyN') { for (const a of VS.alive(g)) { a.dead = true; a.deadT = 0; } }
@@ -3057,7 +3353,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     VS.update(g, ldt);
     drain();
     if (endTimer > 0) { endTimer -= dt; if (endTimer <= 0) { endTimer = -1; if (!g.patched) showPatch(); else showEnd(false); } }
-    if ($('hub').classList.contains('show')) drawShip();
+    if (hubOn()) { drawHub(dt); requestAnimationFrame(frame); return; }
     const k = Math.min(1, dt * 22);
     for (const e of [g.player].concat(g.enemies)) {
       if (e.rx === undefined) { e.rx = e.x; e.ry = e.y; }
@@ -3115,7 +3411,7 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
     requestAnimationFrame(frame);
   }
 
-  addEventListener('resize', () => { layout(); if ($('hub').classList.contains('show')) drawShip(); });
+  addEventListener('resize', () => layout());
   newRun();
   layout();
   if (save.unl.hub) showHub();
