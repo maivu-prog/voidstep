@@ -55,7 +55,10 @@ body.hubmode #pad { display: none; }
 body.canquit #quitBtn { display: flex; }
 .key.muted { background: #9a8a70; color: #4a3a2a; }
 #musicHub, #musicPause { font-size: 14px; letter-spacing: .5px; }
-#musicPause { min-width: 110px; height: 46px; }
+#musicPause, #ctrlPause { min-width: 120px; height: 46px; font-size: 14px; letter-spacing: .5px; }
+.tg { display: flex; gap: 12px; }
+/* điều khiển bằng vuốt: ẩn D-pad */
+body.swipe #pad { display: none; }
 .btn.cream { background: #efe2c4; color: #2b1d16; }
 /* màn kết / vá khẩn cấp: ẩn D-pad cho khỏi lộ sau nút */
 body:has(.ov.show) #pad { visibility: hidden; }
@@ -124,7 +127,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
 <div id="pad"><div class="pb" data-d="up"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(0 5 5)"/></svg></div><div class="pb" data-d="left"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(-90 5 5)"/></svg></div><div class="pb" data-d="right"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(90 5 5)"/></svg></div><div class="pb" data-d="down"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(180 5 5)"/></svg></div></div>
 <button class="key" id="quitBtn" aria-label="Pause">&#10005;</button>
 <div id="hub"><div class="card2 riv" id="hubCard"></div><div id="hubNews"></div><button class="key nav" id="hubPrev"></button><button class="key red" id="hubLaunch"><span class="big">LAUNCH</span></button><button class="key nav" id="hubNext"></button><div id="hubTomorrow"></div><button class="key" id="musicHub">&#9834; ON</button></div>
-<div id="pause" class="ov"><h1>PAUSED</h1><div class="sub">Leave now and it counts as getting eaten:<br>you keep <b id="pauseKeep">0</b> scrap.</div><button class="btn cream" id="pauseGo">Keep going</button><button class="btn" id="pauseQuit">Abandon run</button><button class="key" id="musicPause">&#9834; ON</button></div>
+<div id="pause" class="ov"><h1 id="pauseT">PAUSED</h1><div class="sub">Leave now and it counts as getting eaten:<br>you keep <b id="pauseKeep">0</b> scrap.</div><button class="btn cream" id="pauseGo">Keep going</button><button class="btn" id="pauseQuit">Abandon run</button><div class="tg"><button class="key" id="musicPause">&#9834; ON</button><button class="key" id="ctrlPause">&#10010; D-PAD</button></div></div>
 <div id="patch" class="ov"><h1>EMERGENCY<br>PATCH</h1><div class="sub">Tape the suit and get back up with 3 HP.<br>Once per run.</div><div class="adbox" id="adBox"></div><button class="btn" id="patchAd">&#9654; Watch ad</button><button class="btn2" id="patchNo">No thanks</button></div>
 <div id="end" class="ov"><h1 id="endT">SHIP CLEARED!</h1><div class="sub" id="endS"></div><div class="stats riv" id="endStats"></div><div class="tip"><img id="endBolt" alt=""><span id="endTip"></span></div><div class="stats riv" id="endMeta" style="display:none"></div><button class="btn" id="again">Play again</button></div>
 <div id="build">voidstep toy-9c</div>
@@ -209,9 +212,35 @@ body:has(.ov.show) #pad { visibility: hidden; }
     { id: 'ricochet', name: 'Ricochet',    desc: 'Shots that hit an alien bounce to the nearest other alien.', glyph: '↯', lab: true },
   ];
 
+  // xorshift; trạng thái để ở f.s cho lưu ván được (cùng dãy số như trước)
   function rng(seed) {
-    let s = (seed >>> 0) || 1;
-    return function () { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+    const f = function () { let s = f.s; s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; f.s = s; return s / 4294967296; };
+    f.s = (seed >>> 0) || 1;
+    return f;
+  }
+
+  // ---------- lưu / nạp ván (Mai 27/11: rời app rồi mở lại chơi tiếp) ----------
+  const SAVE_V = 1;
+  function snapshot(g) {
+    const o = Object.assign({}, g);
+    o.v = SAVE_V; o.rnd = g.rnd.s; o.cur = g.cur.key; o.events = [];
+    o.rooms = [...g.rooms.entries()];
+    o.doorSeals = g.doorSeals ? [...g.doorSeals.entries()] : [];
+    delete o.grid; delete o.objs; // trỏ vào phòng hiện tại, dựng lại khi nạp
+    return JSON.stringify(o);
+  }
+  function restore(str) {
+    const g = JSON.parse(str);
+    if (!g || g.v !== SAVE_V || !Array.isArray(g.rooms)) return null;
+    const rs = g.rnd;
+    g.rnd = rng(1); g.rnd.s = rs;
+    g.rooms = new Map(g.rooms);
+    g.cur = g.rooms.get(g.cur);
+    if (!g.cur) return null;
+    g.grid = g.cur.grid; g.objs = g.cur.objs;
+    g.doorSeals = new Map(g.doorSeals);
+    g.events = [];
+    return g;
   }
 
   function create(seed, meta) {
@@ -1034,7 +1063,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     }
   }
 
-  root.VS = { W, H, MW, MH, DIRS, DOOR, TYPES, DECKS, UPGRADES, PRICE_BUFF, PRICE_HEAL, create, update, step, shoot, revive, alive, PARRY_WINDOW, doorHp, DOOR_HP, enemyAt, objAt, tile, locked, CLOSE_WINDOW, SECOND_CD, OPP };
+  root.VS = { W, H, MW, MH, DIRS, DOOR, TYPES, DECKS, UPGRADES, PRICE_BUFF, PRICE_HEAL, create, update, step, shoot, revive, alive, PARRY_WINDOW, doorHp, DOOR_HP, enemyAt, objAt, tile, locked, CLOSE_WINDOW, SECOND_CD, OPP, snapshot, restore };
 })(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
@@ -1669,6 +1698,11 @@ body:has(.ov.show) #pad { visibility: hidden; }
   const hud = { scrapX: 20, scrapY: 70 };
   const seenHint = {};
   const byDoorShake = {};
+  // điều khiển: 'pad' (D-pad, mặc định) hoặc 'swipe' (vuốt = đi/húc, vuốt rồi giữ = bắn) — Mai 27/11
+  let CTRL = (() => { try { return localStorage.getItem('voidstep.ctrl') === 'swipe' ? 'swipe' : 'pad'; } catch (e) { return 'pad'; } })();
+  document.body.classList.toggle('swipe', CTRL === 'swipe');
+  // icon buff ở dải dưới: chạm vào thì hiện tooltip (Mai 27/11)
+  let iconHits = [], buffTip = null;
 
   // ---------- âm thanh ----------
   let AC = null;
@@ -1803,7 +1837,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     Object.assign(pad.style, { left: (GX + padRect.x) + 'px', top: padRect.y + 'px', width: size + 'px', height: size + 'px' });
     Object.assign($('hub').style, { left: GX + 'px', width: SW + 'px', height: SH + 'px' });
     Object.assign($('quitBtn').style, { left: (GX + SW - 12 - 40) + 'px', top: '12px' });
-    VY0 = HUD_H; VY1 = padRect.y - 14;
+    VY0 = HUD_H; VY1 = CTRL === 'swipe' ? SH - 104 : padRect.y - 14;
     VCX = SW / 2; VCY = (VY0 + VY1) / 2;
     // camera gần: ~4,6 ô bề ngang
     TS = Math.round(Math.min(SW / 4.6, (VY1 - VY0) / 5.6));
@@ -1977,7 +2011,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
           p.lunge = null; p.bonk = null;
           strikes = []; zaps = [];
           if (ev.first && ROOM_TITLE[ev.kind] && !banner) tipBanner = { t: 0, life: 1.6, text: ROOM_TITLE[ev.kind] };
-          if (ev.first && ev.kind === 'fight' && !seenHint.shoot && !seenHint.shootTip) { seenHint.shootTip = true; tipBanner = { t: 0, life: 3.2, text: 'Hold an arrow to shoot!' }; }
+          if (ev.first && ev.kind === 'fight' && !seenHint.shoot && !seenHint.shootTip) { seenHint.shootTip = true; tipBanner = { t: 0, life: 3.2, text: CTRL === 'swipe' ? 'Swipe and hold to shoot!' : 'Hold an arrow to shoot!' }; }
           break;
         case 'intro': tipBanner = { t: 0, life: 2.4, text: ev.text }; break;
         case 'clang': {
@@ -2153,17 +2187,45 @@ body:has(.ov.show) #pad { visibility: hidden; }
           float('PATCHED!', cx(p.x), cy(p.y) - TS * 0.9, { col: '#b9d66a', size: Math.max(28, TS * 0.5), life: 1.3 });
           sparks(cx(p.x), cy(p.y), 20, '185,214,106'); sfx('heal'); buzz(40); break;
         case 'win': showEnd(true); break;
-        case 'lose': endTimer = 1.1; break;
+        case 'lose': endTimer = 1.1; saveRun(); break;
         case 'wake': { const e = byId(ev.id); if (e) float('!', cx(e.x), cy(e.y) - TS * 0.9, { col: '#d9a53a', size: Math.max(26, TS * 0.46) }); break; }
       }
     }
   }
 
+  // ---------- lưu ván khi rời app (Mai 27/11): mở lại vào thẳng ván, hiện bảng WELCOME BACK ----------
+  const RUN_KEY = 'voidstep.run.v1';
+  let lastRunSave = 0;
+  function saveRun() {
+    lastRunSave = rt;
+    if (!g || g.ended || hubOn()) return;
+    if (g.phase !== 'play' && g.phase !== 'cleared' && g.phase !== 'lost') return;
+    try { localStorage.setItem(RUN_KEY, VS.snapshot(g)); } catch (e) { /* đầy bộ nhớ: bỏ qua */ }
+  }
+  function clearRun() { try { localStorage.removeItem(RUN_KEY); } catch (e) { /* bỏ qua */ } }
+  function resumeRun() {
+    let ng = null;
+    try { const str = localStorage.getItem(RUN_KEY); if (str) ng = VS.restore(str); } catch (e) { ng = null; }
+    if (!ng) { clearRun(); return false; }
+    g = ng;
+    ART.setHero(g.crew);
+    parts = []; floats = []; strikes = []; zaps = []; coins = []; shots = []; banner = null; tipBanner = null; trans = null; endTimer = -1; press = null;
+    camX = null; roomCache.clear();
+    $('hub').classList.remove('show'); document.body.classList.remove('hubmode');
+    if (g.phase === 'lost') endTimer = 0.4; // chết rồi mới tắt app: mở lại là tới màn vá / màn kết
+    else openPause(true);
+    return true;
+  }
+  addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveRun(); });
+  addEventListener('pagehide', saveRun);
+
   // ---------- tạm dừng + bỏ chuyến (Mai 27/11): nút ✕ góc HUD → hỏi lại 1 nhịp → về tàu; tính như bị ăn ----------
   function canQuit() {
     return !!(g && save.unl.hub && !g.tut && !g.ended && g.phase === 'play' && !hubOn() && !$('end').classList.contains('show') && !$('patch').classList.contains('show') && !$('pause').classList.contains('show'));
   }
-  function openPause() {
+  function openPause(resumed) {
+    $('pauseT').textContent = resumed ? 'WELCOME BACK' : 'PAUSED';
+    ctrlLabels();
     if (press) pressEnd(press.src, press.id, true);
     const keep = Math.min(1, META.CONFIG.keepOnLoss + 0.15 * META.lvl(save, 'scanner'));
     $('pauseKeep').textContent = Math.floor(g.scrap * keep) + ' of ' + g.scrap;
@@ -2174,7 +2236,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
   function abandonRun() {
     $('pause').classList.remove('show');
     if (g.ended) return;
-    g.phase = 'lost'; g.lostTo = 'quit'; g.ended = true;
+    g.phase = 'lost'; g.lostTo = 'quit'; g.ended = true; clearRun();
     lastResult = META.endRun(save, g, false);
     say.push('Back already? You kept ' + lastResult.kept + ' scrap from deck ' + (g.deck + 1) + '.');
     sfx('door');
@@ -2195,7 +2257,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
   };
   function showEnd(win) {
     if (g.ended) return;
-    g.ended = true;
+    g.ended = true; clearRun();
     lastResult = META.endRun(save, g, win);
     const r = lastResult;
     const lines = [['Scrap kept', '+' + r.kept + ' ' + NUT + ' (' + Math.round(r.keep * 100) + '%)']];
@@ -2826,6 +2888,43 @@ body:has(.ov.show) #pad { visibility: hidden; }
   addEventListener('blur', () => { if (press) pressEnd(press.src, press.id, true); });
   cvs.addEventListener('contextmenu', e => e.preventDefault());
   cvs.addEventListener('pointerdown', () => { audioInit(); guardBack(); });
+  // chạm icon buff ở dải dưới → tooltip (góc D-pad nằm trên #pad nên nghe cả ở #pad)
+  function iconTap(e) {
+    if (hubOn() || !g) return false;
+    const r = cvs.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+    const h = iconHits.find(q => Math.hypot(px - q.x, py - q.y) <= q.r);
+    if (!h) { buffTip = null; return false; }
+    buffTip = buffTip && buffTip.id === h.id ? null : { id: h.id, t: rt };
+    sfx('tick'); buzz(8);
+    return true;
+  }
+  $('pad').addEventListener('pointerdown', e => { if (e.target === $('pad')) iconTap(e); });
+  // vuốt (tuỳ chọn): vuốt = đi/húc 1 ô; vuốt rồi giữ = sạc bắn theo hướng vuốt (dùng chung luật giữ của D-pad)
+  let sw = null;
+  cvs.addEventListener('pointerdown', e => {
+    if (iconTap(e) || CTRL !== 'swipe' || hubOn()) return;
+    sw = { id: e.pointerId, x0: e.clientX, y0: e.clientY, d: null };
+    try { cvs.setPointerCapture(e.pointerId); } catch (err) { /* bỏ qua */ }
+  });
+  cvs.addEventListener('pointermove', e => {
+    if (!sw || sw.id !== e.pointerId || sw.d) return;
+    const dx = e.clientX - sw.x0, dy = e.clientY - sw.y0;
+    if (Math.hypot(dx, dy) < Math.max(14, TS * 0.2)) return;
+    sw.d = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+    pressStart(sw.d, 'swipe', e.pointerId);
+  });
+  const swEnd = (e, cancel) => { if (!sw || sw.id !== e.pointerId) return; if (sw.d) pressEnd('swipe', e.pointerId, cancel); sw = null; };
+  cvs.addEventListener('pointerup', e => swEnd(e, false));
+  cvs.addEventListener('pointercancel', e => swEnd(e, true));
+  function ctrlLabels() { const b = $('ctrlPause'); if (b) b.textContent = CTRL === 'swipe' ? '☝ SWIPE' : '✚ D-PAD'; }
+  function setCtrl(c) {
+    CTRL = c;
+    try { localStorage.setItem('voidstep.ctrl', c); } catch (e) { /* bỏ qua */ }
+    document.body.classList.toggle('swipe', c === 'swipe');
+    layout(); ctrlLabels(); sfx('tick');
+  }
+  $('ctrlPause').addEventListener('click', () => setCtrl(CTRL === 'swipe' ? 'pad' : 'swipe'));
+  window.__vs.hud = { get icons() { return iconHits; }, get tip() { return buffTip; }, get ctrl() { return CTRL; }, get vy1() { return VY1; } };
 
   // ---------- vẽ ----------
   function txt(s, x, y, size, fill, align, stroke) {
@@ -3302,6 +3401,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     const idle = rt - lastInput > 6;
     const tut = g.tut;
     if (tut && tut.step === 0) {
+      if (CTRL === 'swipe') { arrow(cx(p.x), cy(p.y) - TS * 0.8, 'up', TS * 0.42); bubble('Swipe up to step', VCX, VY1 - 34, size); return; }
       setHintBtn('up');
       bubble('Tap an arrow to step', padRect.x + padRect.w / 2, padRect.y - 24, size);
       return;
@@ -3407,16 +3507,46 @@ body:has(.ov.show) #pad { visibility: hidden; }
     }
     // nâng cấp đang có: 2 bên D-pad (màn dọc) hoặc cột trái (màn ngang)
     const ids = Object.keys(g.ups), R = 16, gp = 7;
+    iconHits = [];
+    if (portrait && CTRL === 'swipe' && !ids.length) {
+      ctx.font = `700 14px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = 'rgba(203,184,154,0.6)';
+      ctx.fillText('Swipe to move · swipe and hold to shoot', SW / 2, VY1 + (SH - VY1) / 2);
+    }
     ids.forEach((id, i) => {
       let x, y;
-      if (portrait) {
+      if (portrait && CTRL === 'swipe') {
+        const per = Math.max(1, Math.floor((SW - 24) / 40));
+        x = 16 + R + (i % per) * 40; y = VY1 + 16 + R + Math.floor(i / per) * 40;
+      } else if (portrait) {
         const cs = (padRect.w - 12) / 3, cr = (i >> 2) % 4, j = i & 3;
         const ox = padRect.x + (cr % 2) * 2 * (cs + 6), oy = padRect.y + (cr >> 1) * 2 * (cs + 6);
         x = ox + cs * (j % 2 ? 0.73 : 0.27); y = oy + cs * (j >> 1 ? 0.73 : 0.27);
       } else { x = 24 + R; y = VY0 + 24 + R + i * (R * 2 + gp); }
+      if (buffTip && buffTip.id === id) { ctx.beginPath(); ctx.arc(x, y, R + 4, 0, 7); ctx.lineWidth = 3; ctx.strokeStyle = '#f3d27a'; ctx.stroke(); }
       itemIcon(id, x, y, R);
       if (g.ups[id] > 1) txt('x' + g.ups[id], x + R * 0.9, y + R * 0.7, 12, '#d9a53a');
+      iconHits.push({ id, x, y, r: R + 8 });
     });
+    // tooltip buff vừa chạm: đè lên bảng thông tin món đứng cạnh, tự tắt sau 3,5 s
+    if (buffTip && (rt - buffTip.t > 3.5 || !g.ups[buffTip.id])) buffTip = null;
+    if (buffTip) {
+      const id = buffTip.id, n = g.ups[id], hit = iconHits.find(q => q.id === id);
+      const pw = Math.min(380, SW - 24), ph = 74;
+      const px = portrait ? SW / 2 - pw / 2 : 20, py = portrait ? VY1 - ph - 10 : SH - ph - 20;
+      rr(ctx, px, py, pw, ph, 14); ctx.fillStyle = '#efe2c4'; ctx.fill(); ctx.lineWidth = 3.5; ctx.strokeStyle = INK; ctx.stroke();
+      if (hit && portrait) {
+        // mũi nhọn chỉ xuống icon vừa chạm
+        const tx = clamp(hit.x, px + 22, px + pw - 22), ty = py + ph;
+        ctx.beginPath(); ctx.moveTo(tx - 10, ty - 2); ctx.lineTo(tx, ty + 11); ctx.lineTo(tx + 10, ty - 2); ctx.closePath(); ctx.fillStyle = '#efe2c4'; ctx.fill();
+        ctx.beginPath(); ctx.moveTo(tx - 10, ty); ctx.lineTo(tx, ty + 11); ctx.lineTo(tx + 10, ty); ctx.lineWidth = 3.5; ctx.strokeStyle = INK; ctx.stroke();
+      }
+      itemIcon(id, px + 36, py + ph / 2, 24);
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = INK;
+      ctx.font = `800 19px ${FONT}`; ctx.fillText(UP(id).name + (n > 1 ? '  x' + n : ''), px + 68, py + 24);
+      ctx.font = `500 15px ${FONT}`; ctx.fillStyle = '#4a372a';
+      wrap(UP(id).desc, px + 68, py + 49, pw - 80, 17);
+      return;
+    }
     // bảng thông tin món đứng cạnh
     const near = g.objs.filter(o => (o.kind === 'buff' || o.kind === 'shop') && Math.abs(o.x - p.x) + Math.abs(o.y - p.y) <= 1)[0];
     if (near && g.phase === 'play') {
@@ -3544,6 +3674,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     const paused = $('pause').classList.contains('show');
     if (paused) ldt = 0; // tạm dừng: ván đứng yên
     MUS.fight = !hubOn() && !paused && g.phase === 'play' && VS.alive(g).length > 0;
+    if (!hubOn() && rt - lastRunSave > 4) saveRun();
     document.body.classList.toggle('canquit', canQuit());
     updatePress();
     VS.update(g, ldt);
@@ -3610,7 +3741,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
   addEventListener('resize', () => layout());
   newRun();
   layout();
-  if (save.unl.hub) showHub();
+  if (!resumeRun() && save.unl.hub) showHub();
   if (document.fonts && document.fonts.load) document.fonts.load(`800 20px ${FONT}`).then(() => roomCache.clear()).catch(() => {});
   requestAnimationFrame(frame);
 })();
