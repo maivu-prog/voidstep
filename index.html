@@ -181,9 +181,9 @@ body:has(.ov.show) #pad { visibility: hidden; }
   const UPGRADES = [
     { id: 'heavy',  name: 'Heavy Wrench',  desc: 'Knockback pushes 2 tiles.', glyph: '»' },
     { id: 'chain',  name: 'Shock Coil',    desc: 'Hits also zap aliens next to the target.', glyph: 'ϟ' },
-    { id: 'suit',   name: 'Patched Suit',  desc: '+2 max HP and heal 2.', glyph: '+', stack: true },
+    { id: 'suit',   name: 'Patched Suit',  desc: '+2 max HP.', glyph: '+', stack: true },
     { id: 'charge', name: 'Running Start', desc: 'Step twice the same way, then bump: +2 damage.', glyph: '➜' },
-    { id: 'thorns', name: 'Spiky Plating', desc: 'Aliens that hurt you take 2 damage.', glyph: '✸' },
+    { id: 'thorns', name: 'Spiky Plating', desc: 'Aliens that hurt you take 1 damage.', glyph: '✸' },
     { id: 'leech',  name: 'Snack Break',   desc: 'Every 3 kills heals 1.', glyph: '♥' },
     { id: 'adren',  name: 'Adrenaline',    desc: 'After a CLOSE dodge, next bump deals +2.', glyph: '!' },
     { id: 'decomp', name: 'Decompression', desc: 'Venting an alien sucks nearby aliens toward the vent.', glyph: '◎' },
@@ -639,6 +639,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
   // giữ nút để bắn: đạn bay thẳng, trúng alien đầu tiên (2 sát thương + đẩy lùi 1 ô).
   // Buff: Piercing Rivets = xuyên; Big Bore = +1 sát thương, đẩy thêm 1 ô. Cuối đường: thùng dễ vỡ thì vỡ, cửa niêm phong thì sứt, thùng tiếp tế thì mở.
   const CD_SHOT = 0.22;
+  const GUN_RANGE = 4; // Mai 27/11 (bảng config 1.13): đạn bay tối đa 4 ô (trước là 14 = hết phòng)
   function shoot(g, dir) {
     if (g.phase !== 'play' && g.phase !== 'cleared') return false;
     const p = g.player;
@@ -651,7 +652,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     const pierce = flame || !!g.ups.pierce;
     let x = p.x, y = p.y, endX = x, endY = y, stop = null;
     const hits = [];
-    for (let i = 0; i < (flame ? 3 : 14); i++) {
+    for (let i = 0; i < (flame ? 3 : GUN_RANGE); i++) {
       const nx = x + d[0], ny = y + d[1];
       if (!inB(nx, ny) || solid(g, nx, ny)) { stop = inB(nx, ny) ? { x: nx, y: ny } : { out: true }; break; }
       x = nx; y = ny; endX = x; endY = y;
@@ -764,13 +765,14 @@ body:has(.ov.show) #pad { visibility: hidden; }
     return true;
   }
 
+  const THORNS_DMG = 1; // Mai 27/11 (bảng config 5.11): Spiky Plating phản 1 sát thương (trước là 2)
   function hurtPlayer(g, src) {
     const p = g.player;
     if (p.inv > 0 || g.phase !== 'play') return;
     p.hp--; p.inv = 0.7;
     if (g.cur.kind === 'tut' && p.hp < 1) p.hp = 1; // phòng tập không thể thua
     emit(g, { type: 'hurt', hp: p.hp, src: src && src.type });
-    if (g.ups.thorns && src && !src.dead) damage(g, src, 2, 'thorns');
+    if (g.ups.thorns && src && !src.dead) damage(g, src, THORNS_DMG, 'thorns');
     if (p.hp <= 0) { g.phase = 'lost'; g.lostTo = src ? src.type : 'alien'; emit(g, { type: 'lose', to: g.lostTo }); }
   }
 
