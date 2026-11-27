@@ -478,6 +478,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     const p = g.player;
     if (room.spec === 'tut') {
       TUT.forEach((row, y) => row.split('').forEach((c, x) => { if (c === 'z') addEnemy(g, 'grub', x, y, { sleep: true }); }));
+      g.seen.grub = true;
       return;
     }
     const doorTiles = Object.values(DOOR).map(([x, y]) => key(x, y));
@@ -1107,7 +1108,17 @@ body:has(.ov.show) #pad { visibility: hidden; }
     dailyReward: 40,                          // hợp đồng ngày: khó nhất, thưởng to, đổi mỗi ngày
     patchHp: 3,                               // vá khẩn cấp: dậy lại với 3 máu, 1 lần/ván
     visitGapMs: 30 * 60 * 1000,               // vắng > 30 phút = 1 lượt ghé mới
+    beastReward: { normal: 5, elite: 10, boss: 20 }, // Xeno Lab: scrap khi ghi nhận loại alien mới (Mai 27/11)
   };
+  // Xeno Lab: các loại alien trưng bày; hạng quyết định tiền thưởng lần đầu gặp
+  const BEASTS = [
+    { id: 'grub',    name: 'Grub',        tier: 'normal', info: 'Bites the tile it glares at. Step away when it turns red.' },
+    { id: 'spitter', name: 'Spitter',     tier: 'normal', info: 'Spits down a whole line. Step sideways out of it.' },
+    { id: 'nest',    name: 'Egg Sac',     tier: 'normal', info: 'Hatches Grubs until you pop it.' },
+    { id: 'brute',   name: 'Brute',       tier: 'elite',  info: 'Smashes all 8 tiles around it. Only a PARRY stops it.' },
+    { id: 'plater',  name: 'Plater',      tier: 'elite',  info: 'Hides behind a hull plate. Hit the open side, or PARRY to knock the plate off.' },
+    { id: 'queen',   name: 'Brood Queen', tier: 'boss',   info: 'Smashes up close, spits a cross over the room and calls Grubs.' },
+  ];
   const CREW = [
     { id: 'janitor', name: 'Janitor', perk: 'Bumps knock aliens back 1 tile.', deck: null, day: 0 },
     { id: 'welder',  name: 'Welder',  perk: 'Shots become a 3-tile flame that burns every alien in it.', deck: 0, day: 0 },
@@ -1143,6 +1154,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     { id: 'workshop', when: s => !!s.unl.workshop, say: "Workshop's patched up! Bring scrap, I'll bolt on upgrades." },
     { id: 'board',    when: s => !!s.unl.contracts, say: 'Contracts board is online. Jobs pay scrap.' },
     { id: 'lab',      when: s => !!s.unl.lab, say: 'Specimen Lab is open. Every buff you find gets a tube.' },
+    { id: 'xeno',     when: s => !!s.unl.xeno, say: 'Xeno Lab is open! Log every new alien there and I pay scrap for it.' },
     { id: 'bunks',    when: s => Object.keys(s.crew).length > 1, say: 'Crew bunks are ready. Pick who goes next.' },
     { id: 'trophy',   when: s => s.wins >= 1, say: "You beat the Queen! Her crown goes on the shelf." },
   ];
@@ -1165,12 +1177,13 @@ body:has(.ov.show) #pad { visibility: hidden; }
 
   function fresh() {
     return { v: 1, runs: 0, wins: 0, bank: 0, bestDeck: 0, ws: {}, crew: { janitor: true }, pick: 'janitor', seen: {},
-      contracts: [], unl: {}, firstDay: today(), dayOffset: 0, visits: 1, lastOpen: Date.now(), news: [], log: [] };
+      contracts: [], unl: {}, beasts: {}, firstDay: today(), dayOffset: 0, visits: 1, lastOpen: Date.now(), news: [], log: [] };
   }
   function load() {
     let s = null;
     try { s = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { s = null; }
     if (!s || s.v !== 1) s = fresh();
+    s.beasts = s.beasts || {}; // save cũ chưa có Xeno Lab
     if (Date.now() - (s.lastOpen || 0) > CONFIG.visitGapMs) { s.visits = (s.visits || 1) + 1; log(s, 'visit:' + s.visits); }
     s.lastOpen = Date.now();
     checkUnlocks(s);
@@ -1271,7 +1284,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
 
   function checkUnlocks(s) {
     const add = (k, msg) => { if (!s.unl[k]) { s.unl[k] = true; s.news.push(msg); log(s, 'unlock:' + k); } };
-    if (s.runs >= 1) { add('hub', 'hub'); add('workshop', 'workshop'); }
+    if (s.runs >= 1) { add('hub', 'hub'); add('workshop', 'workshop'); add('xeno', 'xeno'); }
     if (s.runs >= 2 && !s.unl.contracts) {
       add('contracts', 'contracts');
       while (s.contracts.length < 3) s.contracts.push(makeContract(s, s.contracts.length));
@@ -1289,6 +1302,10 @@ body:has(.ov.show) #pad { visibility: hidden; }
     s.bestDeck = Math.max(s.bestDeck, g.deck + 1 + (win ? 1 : 0));
     const newSeen = [];
     for (const id of Object.keys(g.ups)) if (!s.seen[id]) { s.seen[id] = true; newSeen.push(id); }
+    // alien gặp trong ván → Xeno Lab (1 = mới, chờ nhận thưởng; 2 = đã nhận)
+    s.beasts = s.beasts || {};
+    const newBeasts = [];
+    for (const t of Object.keys(g.seen || {})) if (BEASTS.some(b => b.id === t) && !s.beasts[t]) { s.beasts[t] = 1; newBeasts.push(t); }
     const rescued = [];
     for (const c of g.rescued || []) if (!s.crew[c]) { s.crew[c] = true; rescued.push(c); }
     const st = Object.assign({}, g.stats, { deck: g.deck + 1 + (win ? 1 : 0) });
@@ -1303,7 +1320,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     checkUnlocks(s);
     const unlocked = Object.keys(s.unl).filter(k => !before[k]);
     save(s);
-    return { kept, keep, newSeen, rescued, done, unlocked };
+    return { kept, keep, newSeen, newBeasts, rescued, done, unlocked };
   }
 
   function buy(s, id) {
@@ -1313,6 +1330,13 @@ body:has(.ov.show) #pad { visibility: hidden; }
     if (s.bank < cost) return false;
     s.bank -= cost; s.ws[id] = l + 1; log(s, 'buy:' + id + l); save(s);
     return true;
+  }
+  function claimBeast(s, id) {
+    const b = BEASTS.find(x => x.id === id);
+    if (!b || !s.beasts || s.beasts[id] !== 1) return 0;
+    const r = CONFIG.beastReward[b.tier] || 0;
+    s.beasts[id] = 2; s.bank += r; log(s, 'beast:' + id); save(s);
+    return r;
   }
   function claim(s, i) {
     const c = s.contracts[i];
@@ -1324,7 +1348,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     return c.reward;
   }
 
-  root.META = { CONFIG, CREW, WORKSHOP, SHELVES, MODULES, LINES, claimDaily, nextGoal, newModules, load, save, reset, runMeta, endRun, buy, claim, pool, shelfState, tomorrow, dayIndex, contractText, lvl, nextPodCrew, checkUnlocks };
+  root.META = { CONFIG, CREW, WORKSHOP, SHELVES, MODULES, LINES, BEASTS, claimBeast, claimDaily, nextGoal, newModules, load, save, reset, runMeta, endRun, buy, claim, pool, shelfState, tomorrow, dayIndex, contractText, lvl, nextPodCrew, checkUnlocks };
 })(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
@@ -2295,6 +2319,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     const lines = [['Scrap kept', '+' + r.kept + ' ' + NUT + ' (' + Math.round(r.keep * 100) + '%)']];
     for (const c of r.rescued) lines.push(['Rescued', META.CREW.find(x => x.id === c).name]);
     if (r.newSeen.length) lines.push(['New in the Lab', r.newSeen.length + ' buff' + (r.newSeen.length > 1 ? 's' : '')]);
+    if (r.newBeasts && r.newBeasts.length) lines.push(['New in the Xeno Lab', r.newBeasts.map(t => META.BEASTS.find(b => b.id === t).name).join(', ')]);
     if (r.done.length) lines.push(['Contracts done', r.done.length]);
     const ng = save.unl.workshop ? META.nextGoal(save) : null;
     $('endMeta').innerHTML = lines.map(([a, b]) => `<span>${a}</span><b>${b}</b>`).join('') +
@@ -2347,9 +2372,10 @@ body:has(.ov.show) #pad { visibility: hidden; }
     { id: 'crew', unl: 'crew', mod: 'bunks', name: 'Crew', title: 'CREW BUNKS', ic: '✚' },
     { id: 'workshop', unl: 'workshop', mod: 'workshop', name: 'Workshop', title: 'WORKSHOP', ic: '⚙' },
     { id: 'lab', unl: 'lab', mod: 'lab', name: 'Lab', title: 'SPECIMEN LAB', ic: '★' },
+    { id: 'xeno', unl: 'xeno', mod: 'xeno', name: 'Xeno', title: 'XENO LAB', ic: '☣' },
     { id: 'board', unl: 'contracts', mod: 'board', name: 'Board', title: 'CONTRACTS', ic: '■' },
   ];
-  const ROOM_OF = { workshop: 'workshop', board: 'board', lab: 'lab', bunks: 'crew' };
+  const ROOM_OF = { workshop: 'workshop', board: 'board', lab: 'lab', bunks: 'crew', xeno: 'xeno' };
   // máy nâng cấp trong xưởng: ô (cột, hàng) + hình; Extra Stock = nâng cấp chính BOLT (robot máy bán hàng)
   const WS_AT = { hull: [1, 1], feed: [3, 1], scanner: [5, 1], kit: [1, 4], breaker: [5, 4], stock: [3, 6] };
   const WS_ICO = { hull: 'item_suit', feed: 'item_trigger', scanner: 'item_magnet', kit: 'obj_chest', breaker: 'item_heavy', stock: 'obj_vendor' };
@@ -2521,8 +2547,11 @@ body:has(.ov.show) #pad { visibility: hidden; }
   // ----- đồ trong phòng theo ô (cột, hàng): chặn đường, đi tới húc vào là dùng — như đồ trong battle -----
   const CREW_X = [0, 2, 4, 6];
   const BOARD_AT = [[3, 1], [1, 4], [3, 4], [5, 4]];
-  const SPAWN = { workshop: [3, 4], crew: [3, 3], lab: [3, 4], board: [3, 2] };
-  const ROOM_NEED = { crew: 'Rescue a crew member from a pod.', lab: 'Find 5 buffs, or come back tomorrow.', board: 'Opens after your 2nd run.' };
+  const SPAWN = { workshop: [3, 4], crew: [3, 3], lab: [3, 4], board: [3, 2], xeno: [3, 3] };
+  // Xeno Lab: lồng kính trưng từng loại alien đã gặp (hàng trên: thường, hàng dưới: elite + boss giữa)
+  const BEAST_AT = { grub: [1, 1], spitter: [3, 1], nest: [5, 1], brute: [1, 4], queen: [3, 4], plater: [5, 4] };
+  const TIER_COL = { normal: '#a9a59a', elite: '#b04a6a', boss: '#d9a53a' };
+  const ROOM_NEED = { crew: 'Rescue a crew member from a pod.', lab: 'Find 5 buffs, or come back tomorrow.', board: 'Opens after your 2nd run.', xeno: 'Opens after your first run.' };
   const roomOpen = id => !!save.unl[ROOMS.find(r => r.id === id).unl];
   function boardPapers() { return (save.daily ? [['daily', save.daily]] : []).concat(save.contracts.map((c, i) => [i, c])); }
   function tubeX(sh, it, k) { const n = sh.items.length; return n >= 6 ? k : it.exclusive ? 5 : k + 1; }
@@ -2538,6 +2567,8 @@ body:has(.ov.show) #pad { visibility: hidden; }
       META.CREW.forEach((c, k) => { out.push({ kind: 'bunk', id: c.id, x: CREW_X[k], y: 0 }); if (pickId() !== c.id) out.push({ kind: 'crew', id: c.id, x: CREW_X[k], y: 1 }); });
     } else if (room === 'lab') {
       META.shelfState(save).forEach((sh, si) => sh.items.forEach((it, k) => out.push({ kind: 'tube', id: it.id, x: tubeX(sh, it, k), y: 1 + si * 2 })));
+    } else if (room === 'xeno') {
+      for (const b of META.BEASTS) { const at = BEAST_AT[b.id]; if (at) out.push({ kind: 'beast', id: b.id, x: at[0], y: at[1] }); }
     } else if (room === 'board') {
       boardPapers().forEach(([key], k) => { if (BOARD_AT[k]) out.push({ kind: 'paper', id: key, x: BOARD_AT[k][0], y: BOARD_AT[k][1] }); });
     }
@@ -2604,6 +2635,12 @@ body:has(.ov.show) #pad { visibility: hidden; }
         const r = o.id === 'daily' ? (META.claimDaily(save) ? c.reward : 0) : META.claim(save, o.id);
         if (r) { sfx('clear'); buzz(25); bankBump = 1; hubBurst(x, y, '#b9d66a'); hubFloats.push({ text: '+' + r + ' scrap', x, y: y - HL.TS * 0.3, t: 0 }); }
       } else { hubFloats.push({ text: c.claimed ? 'Paid' : Math.min(c.prog, c.goal) + ' / ' + c.goal, x, y, t: 0, col: '#cbb89a' }); sfx('tick'); }
+    } else if (o.kind === 'beast') {
+      const st = (save.beasts || {})[o.id];
+      if (st === 1) {
+        const r = META.claimBeast(save, o.id);
+        if (r) { sfx('clear'); buzz(25); bankBump = 1; hubBurst(x, y, '#d9a53a'); hubFloats.push({ text: '+' + r + ' scrap', x, y: y - HL.TS * 0.3, t: 0 }); }
+      } else { hubFloats.push({ text: st ? 'Logged' : 'Not met yet', x, y, t: 0, col: '#cbb89a' }); sfx('tick'); }
     } else if (o.kind === 'trophy') { talk('trophy'); sfx('tick'); }
     else if (o.kind === 'hatch') {
       if (HP.armT && rt - HP.armT < 4) { HP.armT = 0; audioInit(); sfx('door'); newRun(); return; }
@@ -2682,6 +2719,33 @@ body:has(.ov.show) #pad { visibility: hidden; }
     }
     if (sel) selRing(X + 1, Y - TS * 0.36, TS - 2, TS * 1.34);
   }
+  function drawBeast(o, sel) {
+    const TS = HL.TS, X = hx(o.x), Y = hy(o.y), b = META.BEASTS.find(q => q.id === o.id), st = (save.beasts || {})[o.id] || 0;
+    const big = b.tier === 'boss', lw = Math.max(2, TS * 0.06);
+    // đế thép + dải màu theo hạng
+    ART.setLW(lw);
+    ART.blob(ctx, ART.rrect(X + TS * 0.04, Y + TS * 0.62, TS * 0.92, TS * 0.32, TS * 0.06), '#6d7778', '#545d5e', TS);
+    rr(ctx, X + TS * 0.1, Y + TS * 0.72, TS * 0.8, TS * 0.1, 3); ctx.fillStyle = TIER_COL[b.tier]; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = INK; ctx.stroke();
+    // lồng kính
+    const gx = X + TS * 0.08, gy = Y - TS * 0.62, gw = TS * 0.84, gh = TS * 1.28;
+    rr(ctx, gx, gy, gw, gh, TS * 0.16); ctx.fillStyle = st ? 'rgba(207,227,214,0.2)' : 'rgba(20,16,12,0.55)'; ctx.fill();
+    ctx.save(); rr(ctx, gx, gy, gw, gh, TS * 0.16); ctx.clip();
+    ctx.filter = (o.id === 'plater' ? 'hue-rotate(-38deg) saturate(1.3) ' : '') + (st ? '' : 'brightness(0) opacity(0.7)') || 'none';
+    const sz = TS * (big ? 0.52 : b.tier === 'elite' ? 0.78 : 0.95);
+    ctx.save(); ctx.translate(X + TS / 2, Y + TS * 0.6 + Math.sin(rt * 2 + o.x) * 1.5); ART.draw(ctx, o.id, sz, { t: rt + o.x, face: 'right', sleep: false }); ctx.restore();
+    ctx.filter = 'none';
+    ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.fillRect(gx + gw * 0.12, gy, gw * 0.1, gh);
+    ctx.restore();
+    rr(ctx, gx, gy, gw, gh, TS * 0.16); ctx.lineWidth = lw; ctx.strokeStyle = INK; ctx.stroke();
+    tag(st ? b.name.toUpperCase() : '???', X + TS / 2, Y + TS * 1.06, Math.max(9, TS * 0.19));
+    if (st === 1) {
+      // mới gặp, chưa nhận: huy hiệu thưởng nhún + viền sáng
+      const r = META.CONFIG.beastReward[b.tier];
+      ctx.globalAlpha = 0.5 + 0.5 * Math.sin(rt * 5); rr(ctx, gx - 3, gy - 3, gw + 6, gh + 6, TS * 0.18); ctx.lineWidth = 3; ctx.strokeStyle = '#f1d36a'; ctx.stroke(); ctx.globalAlpha = 1;
+      tag('+' + r, X + TS / 2, gy - TS * 0.12 - Math.sin(rt * 4) * 2, Math.max(10, TS * 0.24), '#d9a53a', INK);
+    }
+    if (sel) selRing(gx - 2, gy - 2, gw + 4, gh + TS * 0.36);
+  }
   function drawTrophy(o) {
     const TS = HL.TS, X = hx(o.x), Y = hy(o.y);
     crateAt(X, Y, TS, Math.max(2, TS * 0.06));
@@ -2749,7 +2813,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     for (const it of list) {
       if (it.me) { drawAvatar(dt); continue; }
       const o = it.o, s = sel && sel.kind === o.kind && sel.id === o.id;
-      ({ ws: drawWs, bunk: drawBunk, crew: drawCrewMate, tube: drawTube, paper: drawPaper, trophy: drawTrophy, hatch: drawHatch })[o.kind](o, s);
+      ({ ws: drawWs, bunk: drawBunk, crew: drawCrewMate, tube: drawTube, paper: drawPaper, trophy: drawTrophy, hatch: drawHatch, beast: drawBeast })[o.kind](o, s);
     }
     if (hubRoom === 'lab' && roomOpen('lab')) {
       // nhãn kệ dưới mỗi hàng ống
@@ -2867,6 +2931,14 @@ body:has(.ov.show) #pad { visibility: hidden; }
       const b = c.claimed ? bumpH('PAID', '', false) : c.ready ? bumpH('+' + c.reward + ' ' + NUT, 'Bump to claim', true) : bumpH(Math.min(c.prog, c.goal) + '/' + c.goal, '', false);
       const sub = daily ? (c.claimed ? 'New daily contract tomorrow.' : 'Big reward. Changes every day.') : 'Counts across runs. Claim it here.';
       return tileH(`<div class="paper${daily ? ' daily' : ''}"></div>`) + `<div class="info"><div class="nm">${daily ? '<span class="tag">DAILY</span>' : ''}${META.contractText(c)}</div><div class="ds">${sub}</div><div class="bar"><i style="width:${k * 100}%"></i></div></div>` + b;
+    }
+    if (o.kind === 'beast') {
+      const b = META.BEASTS.find(q => q.id === s), st = (save.beasts || {})[s] || 0, r = META.CONFIG.beastReward[b.tier];
+      const img = SPR(s === 'plater' ? 'alien_grub' : 'alien_' + s);
+      const tagH = `<span class="tag" style="background:${TIER_COL[b.tier]}">${b.tier.toUpperCase()}</span>`;
+      if (!st) return tileH(imgH(img, true), true) + `<div class="info"><div class="nm">${tagH}???</div><div class="ds">Not met yet. Meet it on a run to log it here (+${r} scrap).</div></div>`;
+      const bump = st === 1 ? bumpH('+' + r + ' ' + NUT, 'Bump to claim', true) : bumpH('LOGGED', '', false);
+      return tileH(`<img src="${img}" alt=""${s === 'plater' ? ' style="filter:hue-rotate(-38deg) saturate(1.3)"' : ''}>`) + `<div class="info"><div class="nm">${tagH}${b.name}</div><div class="ds">${b.info}</div></div>` + bump;
     }
     if (o.kind === 'hatch') { const armed = HP.armT && rt - HP.armT < 4; return tileH('<div class="hatchI"></div>') + '<div class="info"><div class="nm">Launch hatch</div><div class="ds">Jump down to the alien ship and start a run.</div></div>' + (armed ? bumpH('GO!', 'Bump again to dive in', true) : bumpH('START', 'Bump to open', true)); }
     return '';
