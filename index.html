@@ -51,6 +51,9 @@ body { font-family: 'Baloo 2', 'Trebuchet MS', sans-serif; color: #2b1d16; }
 #hub > * { position: absolute; box-sizing: border-box; pointer-events: auto; margin: 0; }
 /* sảnh đi bộ (Mai 27/11): D-pad hiện cả ở tàu; nút LAUNCH/◀ ▶ cũ bỏ (xuất phát = húc cửa sập) */
 #hubPrev, #hubNext, #hubLaunch { display: none !important; }
+/* nút FIGHT ở ô giữa D-pad (Mai 27/11): chạm là vào trận */
+#fightBtn { border-radius: 18px; padding: 0; }
+#fightBtn .big { -webkit-text-stroke: 4px #2b1d16; letter-spacing: .5px; }
 #hubCard { display: none; }
 #hubTomorrow.corner { flex-direction: column; justify-content: center; white-space: normal; text-align: center; padding: 6px; gap: 3px; font-size: 12px; line-height: 1.15; border-radius: 16px; }
 #hubTomorrow.corner .hzs { display: none; }
@@ -150,7 +153,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
 <canvas id="c"></canvas>
 <div id="pad"><div class="pb" data-d="up"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(0 5 5)"/></svg></div><div class="pb" data-d="left"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(-90 5 5)"/></svg></div><div class="pb" data-d="right"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(90 5 5)"/></svg></div><div class="pb" data-d="down"><svg viewBox="0 0 10 10"><path d="M5 1.2 L9 7.8 L1 7.8 Z" fill="#2b1d16" transform="rotate(180 5 5)"/></svg></div></div>
 <button class="key" id="quitBtn" aria-label="Pause">&#10005;</button>
-<div id="hub"><div class="card2 riv" id="hubCard"></div><div id="hubNews"></div><button class="key nav" id="hubPrev"></button><button class="key red" id="hubLaunch"><span class="big">LAUNCH</span></button><button class="key nav" id="hubNext"></button><div id="hubTomorrow"></div><button class="key" id="musicHub">&#9834; ON</button></div>
+<div id="hub"><div class="card2 riv" id="hubCard"></div><div id="hubNews"></div><button class="key nav" id="hubPrev"></button><button class="key red" id="hubLaunch"><span class="big">LAUNCH</span></button><button class="key nav" id="hubNext"></button><div id="hubTomorrow"></div><button class="key" id="musicHub">&#9834; ON</button><button class="key red" id="fightBtn"><span class="big">FIGHT</span></button></div>
 <div id="pause" class="ov"><h1 id="pauseT">PAUSED</h1><div class="sub">Leave now and it counts as getting eaten:<br>you keep <b id="pauseKeep">0</b> scrap.</div><button class="btn cream" id="pauseGo">Keep going</button><button class="btn" id="pauseQuit">Abandon run</button><div class="tg"><button class="key" id="musicPause">&#9834; ON</button><button class="key" id="ctrlPause">&#10010; D-PAD</button></div></div>
 <div id="patch" class="ov"><h1>EMERGENCY<br>PATCH</h1><div class="sub">Tape the suit and get back up with 3 HP.<br>Once per run.</div><div class="adbox" id="adBox"></div><button class="btn" id="patchAd">&#9654; Watch ad</button><button class="btn2" id="patchNo">No thanks</button></div>
 <div id="end" class="ov"><h1 id="endT">SHIP CLEARED!</h1><div class="sub" id="endS"></div><div class="stats riv" id="endStats"></div><div class="tip"><img id="endBolt" alt=""><span id="endTip"></span></div><div class="stats riv" id="endMeta" style="display:none"></div><button class="btn" id="again">Play again</button></div>
@@ -2417,6 +2420,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     if (CTRL === 'swipe') {
       tm.classList.remove('corner');
       box('hubTomorrow', 12, SH - 104 + 14, SW - 24 - 78, 38); box('musicHub', SW - 12 - 66, SH - 104 + 13, 66, 40);
+      box('fightBtn', SW / 2 - 80, SH - 104 + 58, 160, 40); $('fightBtn').querySelector('.big').style.fontSize = '22px';
     } else {
       tm.classList.add('corner');
       const cs = (padRect.w - 12) / 3, y = padRect.y + 2 * (cs + 6), side = padRect.x - 24;
@@ -2429,6 +2433,9 @@ body:has(.ov.show) #pad { visibility: hidden; }
         box('musicHub', padRect.x + 2 * (cs + 6) + (cs - 66) / 2, y + (cs - 40) / 2, 66, 40);
       }
       tm.classList.toggle('tiny', side < 110 && cs < 100);
+      // FIGHT: đúng ô giữa 4 nút mũi tên
+      box('fightBtn', padRect.x + cs + 6 + 3, padRect.y + cs + 6 + 3, cs - 6, cs - 6);
+      $('fightBtn').querySelector('.big').style.fontSize = Math.round(clamp(cs * 0.25, 13, 24)) + 'px';
     }
     if (hubOn()) renderHub();
   }
@@ -2868,7 +2875,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
     const C = $('hubCard'), o = adjObj();
     if (o && o.id !== undefined && o.kind !== 'hatch' && o.kind !== 'trophy') hubSel[hubRoom] = o.id;
     let html = o && o.kind === 'trophy' ? '' : cardHTML(o);
-    if (!html && HL.strip) html = tileH('<div class="hatchI"></div>') + `<div class="info"><div class="nm">Ready to go?</div><div class="ds">${hubRoom === 'workshop' ? 'Walk into the LAUNCH hatch in the middle of the Workshop.' : 'The LAUNCH hatch is in the Workshop.'}</div></div>`;
+    if (!html && HL.strip) html = tileH('<div class="hatchI"></div>') + `<div class="info"><div class="nm">Ready to go?</div><div class="ds">Tap FIGHT to start a run${hubRoom === 'workshop' ? ', or bump the LAUNCH hatch.' : '.'}</div></div>`;
     if (!html) { C.style.display = 'none'; return; }
     if (C.dataset.html !== html) { C.innerHTML = html; C.dataset.html = html; }
     C.classList.add('compact');
@@ -2931,6 +2938,7 @@ body:has(.ov.show) #pad { visibility: hidden; }
   };
   $('hubLaunch').addEventListener('click', () => { audioInit(); sfx('door'); newRun(); });
   $('musicHub').addEventListener('click', musicToggle);
+  $('fightBtn').addEventListener('click', () => { audioInit(); guardBack(); sfx('door'); buzz(20); newRun(); });
   musicLabels();
 
   // ---------- input: D-pad 4 nút + phím ----------
